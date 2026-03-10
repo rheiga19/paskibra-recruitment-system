@@ -1,0 +1,40 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('dokumen_peserta', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->enum('jenis', [
+                'foto_4x6',
+                'ktp_pelajar',
+                'akta_kelahiran',
+                'rapor',
+                'surat_sehat',
+                'surat_izin_ortu'
+            ]);
+            $table->string('path');
+            $table->string('nama_file');
+            $table->timestamps();
+
+            $table->unique(['user_id', 'jenis']); // 1 jenis = 1 file per user
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('dokumen_peserta');
+    }
+};
