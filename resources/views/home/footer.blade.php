@@ -3,7 +3,7 @@
   <div class="footer-grid">
     <div class="footer-brand">
       <a href="{{ route('home') }}" class="nav-logo">
-        <div class="nav-logo-emblem">P</div>
+        <div class="nav-logo-emblem"> <img src="{{ asset('images/logo.png') }}" alt="Logo Paskibra"> </div>
         <div>
           <div class="nav-logo-text">PASKIBRA</div>
           <div class="nav-logo-sub">Kec. Compreng</div>
@@ -34,7 +34,7 @@
       <ul>
         <li><a href="#">Semua Berita</a></li>
         <li><a href="#">Galeri Foto</a></li>
-        <li><a href="3">Pengumuman</a></li>
+        <li><a href="#">Pengumuman</a></li>
         <li><a href="{{ url('/') }}#faq">FAQ</a></li>
       </ul>
     </div>

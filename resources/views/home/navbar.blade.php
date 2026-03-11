@@ -1,7 +1,9 @@
 {{-- resources/views/components/home-navbar.blade.php --}}
 <nav id="navbar">
-  <a href="{{ route('home') }}" class="nav-logo">
-    <div class="nav-logo-emblem">P</div>
+  <a href="{{ route('home') }}" class="nav-logo footer-logo">
+    <div class="nav-logo-emblem">
+    <img src="{{ asset('images/logo.png') }}" alt="Logo Paskibra">
+  </div>
     <div>
       <div class="nav-logo-text">PASKIBRA</div>
       <div class="nav-logo-sub">Kec. Compreng</div>
