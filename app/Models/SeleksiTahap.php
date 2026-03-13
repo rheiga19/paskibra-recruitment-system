@@ -41,6 +41,12 @@ class SeleksiTahap extends Model
         return $this->hasMany(SeleksiHasil::class);
     }
 
+    // Alias — dipakai di destroyTahap() SeleksiController
+    public function hasilSeleksi()
+    {
+        return $this->hasMany(SeleksiHasil::class);
+    }
+
     // ─── Helpers ──────────────────────────────────────────────────
     public function jumlahLolos(): int
     {

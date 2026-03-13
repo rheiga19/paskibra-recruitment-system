@@ -5,7 +5,7 @@
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ isset($title) ? $title . ' — ' : '' }}{{ config('app.name', 'Paskibra Compreng') }}</title>
+    <title>@yield('title', 'Dashboard') — {{ config('app.name', 'Paskibra Compreng') }}</title>
 
     <!-- General CSS -->
     <link rel="stylesheet" href="{{ asset('assets/modules/bootstrap/css/bootstrap.min.css') }}">
@@ -26,8 +26,58 @@
 <body>
 <div id="app">
 
-    {{-- ── SIDEBAR ── --}}
-    @include('partials.sidebar')
+    {{-- ── SIDEBAR PESERTA ── --}}
+    <div class="main-sidebar sidebar-style-2">
+        <aside id="sidebar-wrapper">
+            <div class="sidebar-brand">
+                <a href="{{ route('peserta.dashboard') }}">
+                    {{ config('app.name', 'Paskibra') }}
+                </a>
+            </div>
+            <div class="sidebar-brand sidebar-brand-sm">
+                <a href="{{ route('peserta.dashboard') }}">PSK</a>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li class="menu-header">Menu</li>
+
+                <li class="{{ request()->routeIs('peserta.dashboard') ? 'active' : '' }}">
+                    <a href="{{ route('peserta.dashboard') }}" class="nav-link">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+
+                <li class="{{ request()->routeIs('peserta.profil.*') ? 'active' : '' }}">
+                    <a href="{{ route('peserta.profil.edit') }}" class="nav-link">
+                        <i class="fas fa-user"></i>
+                        <span>Biodata Saya</span>
+                    </a>
+                </li>
+
+                <li class="{{ request()->routeIs('peserta.dokumen.*') ? 'active' : '' }}">
+                    <a href="{{ route('peserta.dokumen.index') }}" class="nav-link">
+                        <i class="fas fa-folder"></i>
+                        <span>Dokumen</span>
+                    </a>
+                </li>
+
+                <li class="{{ request()->routeIs('peserta.pendaftaran.*') ? 'active' : '' }}">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Pendaftaran</span>
+                    </a>
+                </li>
+
+                <li class="{{ request()->routeIs('peserta.hasil.*') ? 'active' : '' }}">
+                    <a href="{{ route('peserta.hasil.index') }}" class="nav-link">
+                        <i class="fas fa-trophy"></i>
+                        <span>Hasil Seleksi</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+    </div>
 
     {{-- ── NAVBAR ── --}}
     <div class="navbar-bg"></div>
@@ -39,13 +89,9 @@
                         <i data-feather="align-justify"></i>
                     </a>
                 </li>
-                <li>
-                    <a href="#" class="nav-link nav-link-lg fullscreen-btn">
-                        <i data-feather="maximize"></i>
-                    </a>
-                </li>
             </ul>
         </div>
+
         <ul class="navbar-nav navbar-right">
             <li class="dropdown">
                 <a href="#" data-toggle="dropdown"
@@ -53,21 +99,17 @@
                     <img alt="avatar" src="{{ asset('assets/img/avatar/avatar-1.png') }}"
                          class="rounded-circle mr-1" width="30">
                     <div class="d-sm-none d-lg-inline-block">
-                        Hi, {{ auth()->user()->name ?? 'Pengguna' }}
+                        Hi, {{ auth()->user()->name ?? 'Peserta' }}
                     </div>
                 </a>
                 <div class="dropdown-menu dropdown-menu-right">
                     <div class="dropdown-title">
                         {{ auth()->user()->name ?? '' }}<br>
-                        <small class="text-muted">{{ ucfirst(auth()->user()->role ?? '') }}</small>
+                        <small class="text-muted">Peserta</small>
                     </div>
-                    @auth
-                    @if(auth()->user()->isPeserta())
-                    <a href="#" class="dropdown-item has-icon">
+                    <a href="{{ route('peserta.profil.edit') }}" class="dropdown-item has-icon">
                         <i class="far fa-user"></i> Profil Saya
                     </a>
-                    @endif
-                    @endauth
                     <div class="dropdown-divider"></div>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
@@ -83,6 +125,18 @@
     {{-- ── MAIN CONTENT ── --}}
     <div class="main-content">
         <section class="section">
+
+            {{-- Section Header --}}
+            <div class="section-header">
+                <h1>@yield('page-title', 'Dashboard')</h1>
+                <div class="section-header-subtitle">@yield('page-subtitle')</div>
+                <div class="section-header-breadcrumb">
+                    <div class="breadcrumb-item active">
+                        <a href="{{ route('peserta.dashboard') }}">Dashboard</a>
+                    </div>
+                    @yield('breadcrumb')
+                </div>
+            </div>
 
             {{-- Flash Messages --}}
             @if(session('success'))

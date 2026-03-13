@@ -10,10 +10,9 @@
 </head>
 <body>
 
-{{-- ── NAVBAR (komponen terpisah) ── --}}
 @include('home.navbar')
 
-{{-- ── HERO ── --}}
+{{-- HERO --}}
 <section class="hero" id="hero">
   <div class="hero-bg"></div>
   <div class="hero-pattern"><div class="hero-pattern-inner"></div></div>
@@ -48,24 +47,15 @@
       <a href="#tentang" class="btn-hero-secondary">Pelajari Lebih Lanjut</a>
     </div>
     <div class="hero-stats">
-      <div class="stat-item">
-        <div class="stat-num">16<span class="stat-accent">+</span></div>
-        <div class="stat-label">Kuota Peserta</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num">3</div>
-        <div class="stat-label">Tahap Seleksi</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num">{{ date('Y') }}</div>
-        <div class="stat-label">Angkatan</div>
-      </div>
+      <div class="stat-item"><div class="stat-num">16<span class="stat-accent">+</span></div><div class="stat-label">Kuota Peserta</div></div>
+      <div class="stat-item"><div class="stat-num">3</div><div class="stat-label">Tahap Seleksi</div></div>
+      <div class="stat-item"><div class="stat-num">{{ date('Y') }}</div><div class="stat-label">Angkatan</div></div>
     </div>
   </div>
   <div class="hero-scroll"><div class="scroll-line"></div>Scroll untuk lebih</div>
 </section>
 
-{{-- ── MARQUEE ── --}}
+{{-- MARQUEE --}}
 <div class="marquee-section">
   <div class="marquee-track">
     @php $items = ['MERAH PUTIH','KEHORMATAN BANGSA','SELEKSI '.date('Y'),'PENGABDIAN TULUS','INDONESIA MERDEKA','KECAMATAN COMPRENG','UPACARA KENEGARAAN']; @endphp
@@ -75,7 +65,7 @@
   </div>
 </div>
 
-{{-- ── STATUS REKRUTMEN ── --}}
+{{-- STATUS REKRUTMEN --}}
 @if($rekrutmenAktif)
 <div class="rekrutmen-bar">
   <div class="rekrutmen-bar-left">
@@ -89,26 +79,51 @@
 </div>
 @endif
 
-{{-- ── TENTANG ── --}}
+{{-- TENTANG --}}
 <section class="section" id="tentang">
   <div class="about-grid">
+
+    {{-- VISUAL: gambar paskibra.png menggantikan emoji --}}
     <div class="about-visual">
-      <div class="about-card-main">
-        <div class="about-card-main-bg"></div>
-        <div class="about-card-main-content"><div class="about-icon">🏛️</div></div>
-        <div class="about-card-badge">
+      <div class="about-card-main" style="padding:0;overflow:visible;background:none;border:none;">
+
+        {{-- Frame foto utama --}}
+        <div style="position:relative;border-radius:20px;overflow:hidden;aspect-ratio:4/3;box-shadow:0 24px 64px rgba(0,0,0,.5);">
+          <img
+            src="{{ asset('images/paskibra1.png') }}"
+            alt="Paskibra Kecamatan Compreng"
+            style="width:100%;height:100%;object-fit:cover;display:block;"
+          >
+          {{-- Overlay gradient bawah --}}
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.65) 0%,transparent 55%);pointer-events:none;"></div>
+          {{-- Keterangan bawah foto --}}
+          <div style="position:absolute;bottom:0;left:0;right:0;padding:20px 22px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;color:#fff;line-height:1.2;">PASKIBRA {{ date('Y') }}</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:3px;">Kecamatan Compreng, Kabupaten Subang</div>
+          </div>
+          {{-- Badge resmi pojok kanan atas --}}
+          <div style="position:absolute;top:14px;right:14px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:5px 13px;font-size:12px;color:#fff;font-weight:700;letter-spacing:1px;">🇮🇩 RESMI</div>
+        </div>
+
+        {{-- Badge program resmi di bawah foto --}}
+        <div class="about-card-badge" style="margin-top:14px;">
           <div class="badge-icon-wrap">🎖️</div>
           <div>
             <div class="badge-text-title">Program Resmi Kecamatan</div>
             <div class="badge-text-sub">Kecamatan Compreng, Subang</div>
           </div>
         </div>
+
       </div>
+
+      {{-- Float card angka 17 --}}
       <div class="about-float-card">
         <div class="float-num">17</div>
         <div class="float-label">Agustus Setiap Tahun</div>
       </div>
     </div>
+
+    {{-- TEKS TENTANG --}}
     <div>
       <div class="section-label">Tentang Kami</div>
       <h2 class="section-title">Menjaga Kehormatan<br>Sang Saka Merah Putih</h2>
@@ -119,10 +134,11 @@
         <div class="feature-row"><div class="feature-icon">🤝</div><div><div class="feature-title">Jaringan Alumni</div><div class="feature-desc">Bergabung dengan komunitas alumni Paskibra Compreng yang terus berkembang setiap tahunnya.</div></div></div>
       </div>
     </div>
+
   </div>
 </section>
 
-{{-- ── ALUR PENDAFTARAN ── --}}
+{{-- ALUR PENDAFTARAN --}}
 <section class="section daftar-section" id="pendaftaran">
   <div class="daftar-header">
     <div class="section-label">Alur Pendaftaran</div>
@@ -139,7 +155,7 @@
   </div>
 </section>
 
-{{-- ── SYARAT ── --}}
+{{-- SYARAT --}}
 <section class="section" id="syarat">
   <div class="section-label">Persyaratan</div>
   <h2 class="section-title">Syarat & Ketentuan Pendaftar</h2>
@@ -150,7 +166,7 @@
   </div>
 </section>
 
-{{-- ── BERITA ── --}}
+{{-- BERITA --}}
 <section class="section" id="berita">
   <div class="section-label">Berita & Info</div>
   <h2 class="section-title">Informasi Terkini</h2>
@@ -172,13 +188,13 @@
   </div>
 </section>
 
-{{-- ── GALERI ── --}}
+{{-- GALERI --}}
 <section class="section" id="galeri">
   <div class="section-label">Galeri</div>
   <h2 class="section-title">Momen Bersejarah</h2>
   <div class="gallery-grid">
     @forelse($galeri as $g)
-    <a href="{{ route('galeri.index') }}" class="gallery-item"><img src="{{ asset('storage/'.$g->foto) }}" alt="{{ $g->judul }}"></a>
+    <a href="#" class="gallery-item"><img src="{{ asset('storage/'.$g->foto) }}" alt="{{ $g->judul }}"></a>
     @empty
     <div class="gallery-item">🎖️</div>
     <div class="gallery-item">🏛️</div>
@@ -190,7 +206,7 @@
   </div>
 </section>
 
-{{-- ── FAQ ── --}}
+{{-- FAQ --}}
 <section class="section" id="faq">
   <div style="text-align:center;margin-bottom:16px;">
     <div class="section-label" style="justify-content:center;">FAQ</div>
@@ -220,7 +236,7 @@
   </div>
 </section>
 
-{{-- ── CTA BANNER ── --}}
+{{-- CTA BANNER --}}
 <div class="cta-banner">
   <h2>SIAP MENGHARUMKAN NAMA COMPRENG?</h2>
   <p>Jadilah bagian dari generasi penerus kebanggaan Kecamatan Compreng. Daftarkan diri sekarang sebelum pendaftaran ditutup.</p>
@@ -230,100 +246,58 @@
     @else
       <a href="{{ route('register') }}" class="btn-hero-primary">Daftar Sekarang <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
     @endauth
-    <a href="#" class="btn-hero-secondary">Lihat Pengumuman</a>
+    <a href="{{ route('pengumuman') }}" class="btn-hero-secondary">Lihat Pengumuman</a>
   </div>
 </div>
 
-{{-- ── FOOTER (komponen terpisah) ── --}}
 @include('home.footer')
 
-{{-- ── THEME TOGGLE BUTTON ── --}}
 <button class="theme-toggle" id="themeToggle" title="Ganti tema" onclick="toggleTheme()">
   <span id="themeIcon">☀️</span>
 </button>
 
 <script>
-  // ── NAVBAR SCROLL ──
   window.addEventListener('scroll', () => {
     const nav = document.getElementById('navbar');
-    nav.style.borderBottomColor = window.scrollY > 50
-      ? 'rgba(204,0,0,0.25)'
-      : 'rgba(204,0,0,0.15)';
+    nav.style.borderBottomColor = window.scrollY > 50 ? 'rgba(204,0,0,0.25)' : 'rgba(204,0,0,0.15)';
   });
-
-  // ── MOBILE MENU ──
-  function toggleMenu() {
-    document.getElementById('navMobile').classList.toggle('open');
-  }
+  function toggleMenu() { document.getElementById('navMobile').classList.toggle('open'); }
   document.addEventListener('click', (e) => {
     const menu = document.getElementById('navMobile');
     const btn  = document.getElementById('hamburger');
-    if (!menu.contains(e.target) && !btn.contains(e.target)) {
-      menu.classList.remove('open');
-    }
+    if (!menu.contains(e.target) && !btn.contains(e.target)) menu.classList.remove('open');
   });
-
-  // ── FAQ ACCORDION ──
   function toggleFaq(el) {
     const item = el.parentElement;
     const wasOpen = item.classList.contains('open');
     document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
     if (!wasOpen) item.classList.add('open');
   }
-
-  // ── SCROLL REVEAL ──
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.style.opacity = '1';
-        e.target.style.transform = 'translateY(0)';
-      }
+      if (e.isIntersecting) { e.target.style.opacity='1'; e.target.style.transform='translateY(0)'; }
     });
   }, { threshold: 0.1 });
-
-  document.querySelectorAll('.req-card, .news-card, .faq-item, .feature-row, .tl-step').forEach(el => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(20px)';
-    el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+  document.querySelectorAll('.req-card,.news-card,.faq-item,.feature-row,.tl-step').forEach(el => {
+    el.style.opacity='0'; el.style.transform='translateY(20px)';
+    el.style.transition='opacity 0.5s ease, transform 0.5s ease';
     observer.observe(el);
   });
-
-  // ── DARK / LIGHT MODE ──
-  const html  = document.documentElement;
-  const icon  = document.getElementById('themeIcon');
-
-  function applyTheme(theme) {
-    if (theme === 'light') {
-      html.setAttribute('data-theme', 'light');
-      icon.textContent = '🌙';
-    } else {
-      html.removeAttribute('data-theme');
-      icon.textContent = '☀️';
-    }
+  const html=document.documentElement, icon=document.getElementById('themeIcon');
+  function applyTheme(t){
+    if(t==='light'){html.setAttribute('data-theme','light');icon.textContent='🌙';}
+    else{html.removeAttribute('data-theme');icon.textContent='☀️';}
   }
-
-  function toggleTheme() {
-    const current = html.getAttribute('data-theme');
-    const next = current === 'light' ? 'dark' : 'light';
-    localStorage.setItem('theme', next);
-    applyTheme(next);
+  function toggleTheme(){
+    const next=html.getAttribute('data-theme')==='light'?'dark':'light';
+    localStorage.setItem('theme',next);applyTheme(next);
   }
-
-  // Prioritas: localStorage → device preference
-  const stored = localStorage.getItem('theme');
-  if (stored) {
-    applyTheme(stored);
-  } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
-    applyTheme('light');
-  } else {
-    applyTheme('dark');
-  }
-
-  // Ikuti perubahan device secara realtime (jika belum ada override manual)
-  window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
-    if (!localStorage.getItem('theme')) {
-      applyTheme(e.matches ? 'light' : 'dark');
-    }
+  const stored=localStorage.getItem('theme');
+  if(stored)applyTheme(stored);
+  else if(window.matchMedia('(prefers-color-scheme: light)').matches)applyTheme('light');
+  else applyTheme('dark');
+  window.matchMedia('(prefers-color-scheme: light)').addEventListener('change',(e)=>{
+    if(!localStorage.getItem('theme'))applyTheme(e.matches?'light':'dark');
   });
 </script>
 </body>

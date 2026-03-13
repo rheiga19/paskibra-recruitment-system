@@ -16,6 +16,7 @@
     <li><a href="{{ url('/') }}#syarat">Syarat</a></li>
     <li><a href="{{ url('/') }}#berita">Berita</a></li>
     <li><a href="{{ url('/') }}#galeri">Galeri</a></li>
+    <li><a href="{{ route('pengumuman') }}">Pengumuman</a></li>
     <li><a href="{{ url('/') }}#faq">FAQ</a></li>
   </ul>
 
@@ -41,6 +42,7 @@
     <li><a href="{{ url('/') }}#syarat" onclick="toggleMenu()">Syarat</a></li>
     <li><a href="{{ url('/') }}#berita" onclick="toggleMenu()">Berita</a></li>
     <li><a href="{{ url('/') }}#galeri" onclick="toggleMenu()">Galeri</a></li>
+    <li><a href="{{ route('pengumuman') }}" onclick="toggleMenu()">Pengumuman</a></li>
     <li><a href="{{ url('/') }}#faq" onclick="toggleMenu()">FAQ</a></li>
   </ul>
   <div class="nav-mobile-actions">
