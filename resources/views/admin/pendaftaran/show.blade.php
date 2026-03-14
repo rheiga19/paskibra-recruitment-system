@@ -27,7 +27,11 @@ $jenisList = [
     'surat_sehat'     => 'Surat Keterangan Sehat',
     'surat_izin_ortu' => 'Surat Izin Orang Tua',
 ];
-$dokumenMap = $pendaftaran->dokumen->keyBy('jenis');
+
+// Filter dokumen yang jenis-nya null untuk mencegah error keyBy
+$dokumenMap = $pendaftaran->dokumen
+    ->filter(fn($d) => !is_null($d->jenis))
+    ->keyBy('jenis');
 @endphp
 
 <div class="row">
@@ -50,9 +54,11 @@ $dokumenMap = $pendaftaran->dokumen->keyBy('jenis');
             <div class="card-body border-top p-0">
                 <table class="table table-sm table-borderless mb-0">
                     <tr><td class="text-muted pl-3">NIK</td><td>{{ $pendaftaran->nik }}</td></tr>
-                    <tr><td class="text-muted pl-3">Lahir</td>
+                    <tr>
+                        <td class="text-muted pl-3">Lahir</td>
                         <td>{{ $pendaftaran->tempat_lahir }}, {{ $pendaftaran->tanggal_lahir->format('d M Y') }}
-                            ({{ $pendaftaran->umur }} th)</td></tr>
+                            ({{ $pendaftaran->umur }} th)</td>
+                    </tr>
                     <tr><td class="text-muted pl-3">Gender</td><td>{{ $pendaftaran->jenis_kelamin === 'L' ? 'Putra' : 'Putri' }}</td></tr>
                     <tr><td class="text-muted pl-3">No. HP</td><td>{{ $pendaftaran->no_hp }}</td></tr>
                     <tr><td class="text-muted pl-3">Alamat</td><td>{{ $pendaftaran->alamat_lengkap }}</td></tr>
@@ -60,9 +66,11 @@ $dokumenMap = $pendaftaran->dokumen->keyBy('jenis');
                     <tr><td class="text-muted pl-3">Sekolah</td><td>{{ $pendaftaran->nama_sekolah }}</td></tr>
                     <tr><td class="text-muted pl-3">Jenjang</td><td>{{ $pendaftaran->jenjang }} Kelas {{ $pendaftaran->kelas }}</td></tr>
                     <tr><td class="text-muted pl-3">Nilai Rata</td><td>{{ $pendaftaran->nilai_rata ?? '-' }}</td></tr>
-                    <tr><td class="text-muted pl-3">Orang Tua</td>
+                    <tr>
+                        <td class="text-muted pl-3">Orang Tua</td>
                         <td>{{ $pendaftaran->nama_ortu }} ({{ $pendaftaran->hubungan_ortu }})
-                            <br><small>{{ $pendaftaran->hp_ortu }}</small></td></tr>
+                            <br><small>{{ $pendaftaran->hp_ortu }}</small></td>
+                    </tr>
                 </table>
             </div>
         </div>
@@ -82,9 +90,7 @@ $dokumenMap = $pendaftaran->dokumen->keyBy('jenis');
                             <span style="font-size:13px;">{{ $label }}</span>
                         </div>
                         @if($dok)
-                            @php
-                                $ext = strtolower(pathinfo($dok->path, PATHINFO_EXTENSION));
-                            @endphp
+                            @php $ext = strtolower(pathinfo($dok->path, PATHINFO_EXTENSION)); @endphp
                             <a href="{{ asset('storage/'.$dok->path) }}" target="_blank"
                                class="btn btn-sm btn-outline-primary" style="font-size:11px;">
                                 <i class="fas fa-{{ in_array($ext, ['jpg','jpeg','png','webp']) ? 'image' : 'file-pdf' }} mr-1"></i>
@@ -97,7 +103,7 @@ $dokumenMap = $pendaftaran->dokumen->keyBy('jenis');
                     @endforeach
                 </ul>
 
-                {{-- Preview gambar jika ada foto 4x6 --}}
+                {{-- Preview foto 4x6 --}}
                 @if($dokumenMap->has('foto_4x6'))
                 @php $foto = $dokumenMap->get('foto_4x6'); @endphp
                 <div class="p-3 text-center border-top">
@@ -174,7 +180,8 @@ $dokumenMap = $pendaftaran->dokumen->keyBy('jenis');
                         <tbody>
                             @foreach($pendaftaran->hasilSeleksi as $h)
                             <tr>
-                                <td>{{ $h->tahap->nama ?? '-' }}</td>
+                                {{-- Gunakan optional() untuk mencegah error jika relasi tahap null --}}
+                                <td>{{ optional($h->tahap)->nama ?? '-' }}</td>
                                 <td>{{ $h->nilai_pancasila ?? '-' }}</td>
                                 <td>{{ $h->nilai_tiu ?? '-' }}</td>
                                 <td>{{ $h->nilai_pbb ?? '-' }}</td>

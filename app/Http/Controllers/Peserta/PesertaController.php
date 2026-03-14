@@ -344,4 +344,51 @@ class PesertaController extends Controller
         $urutan = Pendaftaran::where('rekrutmen_id', $rekrutmen->id)->count() + 1;
         return 'PSK-' . $tahun . '-' . str_pad($urutan, 4, '0', STR_PAD_LEFT);
     }
+
+    public function kartuAnggota()
+{
+    $user        = auth()->user();
+    $rekrutmen   = Rekrutmen::where('is_aktif', true)->first();
+ 
+    $pendaftaran = Pendaftaran::with(['dokumen'])
+        ->where('user_id', $user->id)
+        ->where('is_lulus_final', true)
+        ->when($rekrutmen, fn($q) => $q->where('rekrutmen_id', $rekrutmen->id))
+        ->first();
+ 
+    if (!$pendaftaran) {
+        return back()->with('error', 'Kartu hanya tersedia untuk peserta yang lulus seleksi.');
+    }
+ 
+    return view('peserta.kartu-anggota', compact('pendaftaran', 'rekrutmen'));
+}
+ 
+// ── Rekap Absensi Peserta ─────────────────────────────────────
+public function absensiIndex()
+{
+    $user        = auth()->user();
+    $rekrutmen   = Rekrutmen::where('is_aktif', true)->first();
+    $pendaftaran = null;
+    $rekapAbsensi = collect();
+ 
+    if ($rekrutmen) {
+        $pendaftaran = Pendaftaran::where('user_id', $user->id)
+            ->where('rekrutmen_id', $rekrutmen->id)
+            ->where('is_lulus_final', true)
+            ->first();
+ 
+        if ($pendaftaran) {
+            $rekapAbsensi = \App\Models\Absensi::with('jadwal')
+                ->where('pendaftaran_id', $pendaftaran->id)
+                ->orderByDesc('created_at')
+                ->get();
+        }
+    }
+ 
+    $totalHadir = $rekapAbsensi->where('status', 'hadir')->count();
+    $totalAll   = $rekapAbsensi->count();
+    $persen     = $totalAll > 0 ? round($totalHadir / $totalAll * 100) : 0;
+ 
+    return view('peserta.absensi', compact('pendaftaran', 'rekapAbsensi', 'totalHadir', 'totalAll', 'persen'));
+}
 }

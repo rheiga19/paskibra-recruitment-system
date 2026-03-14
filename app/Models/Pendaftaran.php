@@ -28,20 +28,21 @@ class Pendaftaran extends Model
     ];
 
     public const STATUS = [
-        'menunggu'    => 'Menunggu Verifikasi',
+        'menunggu'     => 'Menunggu Verifikasi',
         'diverifikasi' => 'Sudah Diverifikasi',
-        'lulus'       => 'Lulus',
-        'tidak_lulus' => 'Tidak Lulus',
+        'lulus'        => 'Lulus',
+        'tidak_lulus'  => 'Tidak Lulus',
     ];
 
     public const STATUS_COLOR = [
-        'menunggu'    => 'yellow',
+        'menunggu'     => 'yellow',
         'diverifikasi' => 'blue',
-        'lulus'       => 'green',
-        'tidak_lulus' => 'red',
+        'lulus'        => 'green',
+        'tidak_lulus'  => 'red',
     ];
 
     // ─── Relasi ───────────────────────────────────────────────────
+
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -62,11 +63,14 @@ class Pendaftaran extends Model
         return $this->hasMany(SeleksiHasil::class);
     }
 
+    // Relasi absensi — dipakai di rekap absensi
+    public function absensi()
+    {
+        return $this->hasMany(Absensi::class, 'pendaftaran_id');
+    }
+
     // ─── Helpers ──────────────────────────────────────────────────
 
-    /**
-     * Generate nomor pendaftaran: PSK-{TAHUN}-{ID 5 digit}
-     */
     public static function generateNoPendaftaran(int $id, int $tahun): string
     {
         return 'PSK-' . $tahun . '-' . str_pad($id, 5, '0', STR_PAD_LEFT);
@@ -88,6 +92,7 @@ class Pendaftaran extends Model
     }
 
     // ─── Scopes ───────────────────────────────────────────────────
+
     public function scopeMenunggu($query)
     {
         return $query->where('status', 'menunggu');

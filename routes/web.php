@@ -93,7 +93,20 @@ Route::middleware(['auth', 'role:admin'])
     // ── Pengaturan ──
     Route::get('pengaturan',  [\App\Http\Controllers\Admin\PengaturanController::class, 'edit'])  ->name('pengaturan.edit');
     Route::put('pengaturan',  [\App\Http\Controllers\Admin\PengaturanController::class, 'update'])->name('pengaturan.update');
-});
+
+    Route::get   ('absensi',                      [\App\Http\Controllers\Admin\AbsensiController::class, 'index'])       ->name('absensi.index');
+    Route::post  ('absensi',                      [\App\Http\Controllers\Admin\AbsensiController::class, 'store'])       ->name('absensi.store');
+    Route::get   ('absensi/rekap',                [\App\Http\Controllers\Admin\AbsensiController::class, 'rekap'])       ->name('absensi.rekap');
+    Route::get   ('absensi/export-excel',         [\App\Http\Controllers\Admin\AbsensiController::class, 'exportExcel'])->name('absensi.export-excel');
+    Route::get   ('absensi/export-pdf',           [\App\Http\Controllers\Admin\AbsensiController::class, 'exportPdf'])  ->name('absensi.export-pdf');
+    Route::get   ('absensi/{jadwal}/scan',        [\App\Http\Controllers\Admin\AbsensiController::class, 'scan'])        ->name('absensi.scan');
+    Route::post  ('absensi/{jadwal}/qr',          [\App\Http\Controllers\Admin\AbsensiController::class, 'prosesQr'])   ->name('absensi.qr');
+    Route::post  ('absensi/{jadwal}/manual',      [\App\Http\Controllers\Admin\AbsensiController::class, 'inputManual'])->name('absensi.manual');
+    Route::patch ('absensi/record/{absensi}',     [\App\Http\Controllers\Admin\AbsensiController::class, 'updateStatus'])->name('absensi.update-status');
+    Route::delete('absensi/{jadwal}',             [\App\Http\Controllers\Admin\AbsensiController::class, 'destroy'])    ->name('absensi.destroy');
+    Route::post('absensi/bulk', [\App\Http\Controllers\Admin\AbsensiController::class, 'storeBulk'])
+    ->name('absensi.store-bulk');
+    });
 
 // ══════════════════════════════════════════════════════════════════════
 // PANITIA
@@ -126,6 +139,12 @@ Route::middleware(['auth', 'role:panitia'])
     // ── Hasil Akhir ──
     Route::get('hasil', [\App\Http\Controllers\Panitia\PanitiaController::class, 'hasilIndex'])
         ->name('hasil.index');
+
+    Route::get   ('absensi',                      [\App\Http\Controllers\Admin\AbsensiController::class, 'index'])       ->name('absensi.index');
+    Route::get   ('absensi/{jadwal}/scan',        [\App\Http\Controllers\Admin\AbsensiController::class, 'scan'])        ->name('absensi.scan');
+    Route::post  ('absensi/{jadwal}/qr',          [\App\Http\Controllers\Admin\AbsensiController::class, 'prosesQr'])   ->name('absensi.qr');
+    Route::post  ('absensi/{jadwal}/manual',      [\App\Http\Controllers\Admin\AbsensiController::class, 'inputManual'])->name('absensi.manual');
+    Route::patch ('absensi/record/{absensi}',     [\App\Http\Controllers\Admin\AbsensiController::class, 'updateStatus'])->name('absensi.update-status');
 });
 
 // ══════════════════════════════════════════════════════════════════════
@@ -135,17 +154,17 @@ Route::middleware(['auth', 'role:peserta'])
     ->prefix('peserta')
     ->name('peserta.')
     ->group(function () {
-
+ 
     // ── Dashboard ──
     Route::get('dashboard', [\App\Http\Controllers\Peserta\PesertaController::class, 'dashboard'])
         ->name('dashboard');
-
+ 
     // ── Profil / Biodata ──
     Route::get('profil/edit', [\App\Http\Controllers\Peserta\PesertaController::class, 'profilEdit'])
         ->name('profil.edit');
     Route::put('profil',      [\App\Http\Controllers\Peserta\PesertaController::class, 'profilUpdate'])
         ->name('profil.update');
-
+ 
     // ── Dokumen ──
     Route::get   ('dokumen',         [\App\Http\Controllers\Peserta\PesertaController::class, 'dokumenIndex'])
         ->name('dokumen.index');
@@ -153,9 +172,8 @@ Route::middleware(['auth', 'role:peserta'])
         ->name('dokumen.upload');
     Route::delete('dokumen/{jenis}', [\App\Http\Controllers\Peserta\PesertaController::class, 'dokumenHapus'])
         ->name('dokumen.hapus');
-
+ 
     // ── Pendaftaran ──
-    // PENTING: POST apply & GET index harus di atas GET {pendaftaran} agar tidak bentrok
     Route::post('pendaftaran/{rekrutmen}/apply',  [\App\Http\Controllers\Peserta\PesertaController::class, 'pendaftaranApply'])
         ->name('pendaftaran.apply');
     Route::get ('pendaftaran',                    [\App\Http\Controllers\Peserta\PesertaController::class, 'pendaftaranIndex'])
@@ -164,8 +182,17 @@ Route::middleware(['auth', 'role:peserta'])
         ->name('pendaftaran.show');
     Route::get ('pendaftaran/{pendaftaran}/kartu', [\App\Http\Controllers\Peserta\PesertaController::class, 'pendaftaranKartu'])
         ->name('pendaftaran.kartu');
-
+ 
     // ── Hasil Seleksi ──
     Route::get('hasil-seleksi', [\App\Http\Controllers\Peserta\PesertaController::class, 'hasilSeleksi'])
         ->name('hasil.index');
+ 
+    // ── Absensi ──
+    Route::get('absensi', [\App\Http\Controllers\Peserta\PesertaController::class, 'absensiIndex'])
+        ->name('absensi'); 
+ 
+    // ── Kartu Anggota ──
+    Route::get('kartu', [\App\Http\Controllers\Peserta\PesertaController::class, 'kartuAnggota'])
+        ->name('kartu'); 
+
 });

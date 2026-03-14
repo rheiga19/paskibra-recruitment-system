@@ -21,6 +21,57 @@
 
     <!-- CSS per halaman -->
     @stack('css')
+
+    <style>
+        /* Tombol hamburger mobile — hanya muncul di layar kecil */
+        #mobile-hamburger {
+            display: none;
+        }
+
+        @media (max-width: 1024px) {
+            #mobile-hamburger {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: fixed;
+                top: 12px;
+                left: 12px;
+                z-index: 999;
+                width: 42px;
+                height: 42px;
+                background-color: #6777ef;
+                border-radius: 8px;
+                cursor: pointer;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                border: none;
+                color: #fff;
+                font-size: 18px;
+            }
+
+            /* Overlay gelap saat sidebar terbuka */
+            #mobile-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 890;
+            }
+
+            body.sidebar-show #mobile-overlay {
+                display: block;
+            }
+
+            /* Sidebar muncul saat sidebar-show */
+            body.sidebar-show .main-sidebar {
+                left: 0 !important;
+                z-index: 995 !important;
+            }
+
+            body.sidebar-gone .main-sidebar {
+                left: -250px !important;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -28,6 +79,14 @@
 
     {{-- ── SIDEBAR ── --}}
     @include('partials.sidebar')
+
+    {{-- Overlay mobile --}}
+    <div id="mobile-overlay"></div>
+
+    {{-- Tombol hamburger mobile (fixed, selalu tampil di mobile) --}}
+    <button id="mobile-hamburger" onclick="toggleMobileSidebar()">
+        <i class="fas fa-bars" id="hamburger-icon"></i>
+    </button>
 
     {{-- ── NAVBAR ── --}}
     <div class="navbar-bg"></div>
@@ -152,5 +211,45 @@
 
 <!-- JS per halaman -->
 @stack('js')
+
+<script>
+function toggleMobileSidebar() {
+    var body    = document.body;
+    var icon    = document.getElementById('hamburger-icon');
+    var isOpen  = body.classList.contains('sidebar-show');
+
+    if (isOpen) {
+        // Tutup
+        body.classList.remove('sidebar-show');
+        body.classList.add('sidebar-gone');
+        icon.className = 'fas fa-bars';
+    } else {
+        // Buka
+        body.classList.remove('sidebar-gone');
+        body.classList.add('sidebar-show');
+        icon.className = 'fas fa-times';
+    }
+}
+
+// Tutup sidebar saat klik overlay
+document.getElementById('mobile-overlay').addEventListener('click', function () {
+    document.body.classList.remove('sidebar-show');
+    document.body.classList.add('sidebar-gone');
+    document.getElementById('hamburger-icon').className = 'fas fa-bars';
+});
+
+// Tutup sidebar saat klik link menu
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.main-sidebar .nav-link:not([data-toggle])').forEach(function (a) {
+        a.addEventListener('click', function () {
+            if (window.innerWidth <= 1024) {
+                document.body.classList.remove('sidebar-show');
+                document.body.classList.add('sidebar-gone');
+                document.getElementById('hamburger-icon').className = 'fas fa-bars';
+            }
+        });
+    });
+});
+</script>
 </body>
 </html>

@@ -1,8 +1,52 @@
-/**
- *
- * You can write your CSS code here, DO NOT touch the default JavaScript file
- * because it will make it harder for you to update.
- * 
- */
+/* ================================================
+   TAMBAHKAN DI PALING BAWAH custom.css
+   ================================================ */
 
-/*# sourceMappingURL=custom.css.map */
+@media (max-width: 1024px) {
+
+    /* Navbar fixed di atas */
+    .main-navbar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 895 !important;
+        display: flex !important;
+        height: 70px !important;
+    }
+
+    /* Navbar-bg: perbaiki ukuran, jangan full height */
+    .navbar-bg {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 70px !important;
+        z-index: 894 !important;
+    }
+
+    /* Konten turun 70px agar tidak tertutup navbar */
+    .main-content {
+        padding-top: 90px !important;
+    }
+
+    /* Sidebar di atas segalanya */
+    .main-sidebar {
+        z-index: 900 !important;
+    }
+
+    /* Hamburger tampil */
+    .main-navbar .form-inline {
+        display: flex !important;
+    }
+
+    .main-navbar .form-inline .navbar-nav {
+        display: flex !important;
+        flex-direction: row !important;
+    }
+
+    .main-navbar .collapse-btn {
+        display: flex !important;
+        align-items: center !important;
+    }
+}

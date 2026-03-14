@@ -60,17 +60,19 @@ class RekrutmenController extends Controller
 
     public function show(Rekrutmen $rekrutmen)
     {
-        $rekrutmen->loadCount([
-            'pendaftaran',
-            'pendaftaran as pendaftar_putra' => fn($q) => $q->where('jenis_kelamin', 'L'),
-            'pendaftaran as pendaftar_putri' => fn($q) => $q->where('jenis_kelamin', 'P'),
-            'pendaftaran as lulus_count'     => fn($q) => $q->where('is_lulus_final', true),
-        ]);
+        $rekrutmen->loadCount('pendaftaran');
+
+        $pendaftarPutra = $rekrutmen->pendaftaran()->where('jenis_kelamin', 'L')->count();
+        $pendaftarPutri = $rekrutmen->pendaftaran()->where('jenis_kelamin', 'P')->count();
+        $lulusCount     = $rekrutmen->pendaftaran()->where('is_lulus_final', true)->count();
 
         $tahapList   = $rekrutmen->seleksiTahap;
         $pendaftaran = $rekrutmen->pendaftaran()->with('user')->latest()->paginate(15);
 
-        return view('admin.rekrutmen.show', compact('rekrutmen', 'tahapList', 'pendaftaran'));
+        return view('admin.rekrutmen.show', compact(
+            'rekrutmen', 'tahapList', 'pendaftaran',
+            'pendaftarPutra', 'pendaftarPutri', 'lulusCount'
+        ));
     }
 
     public function edit(Rekrutmen $rekrutmen)

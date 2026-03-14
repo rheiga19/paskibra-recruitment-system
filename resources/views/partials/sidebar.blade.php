@@ -127,6 +127,12 @@
                             <span>Hasil Seleksi</span>
                         </a>
                     </li>
+                    <li class="{{ request()->routeIs('peserta.absensi.*') ? 'active' : '' }}">
+                        <a href="{{ route('peserta.absensi') }}" class="nav-link">
+                            <i class="bi bi-clipboard-check"></i>
+                            <span>Absensi</span>
+                        </a>
+                    </li>
 
                 @endif
 
@@ -189,6 +195,13 @@
                                 </a>
                             </li>
                         </ul>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="{{ route('admin.absensi.index') }}" class="nav-link">
+                            <i class="bi bi-clipboard-check"></i>
+                            <span>Absensi</span>
+                        </a>
                     </li>
 
                     <li class="menu-header">Konten</li>
