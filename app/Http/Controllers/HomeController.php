@@ -13,11 +13,18 @@ class HomeController extends Controller
     public function index()
     {
         $pengaturan     = Pengaturan::ambil();
-        $rekrutmenAktif = Rekrutmen::where('is_aktif', true)->first();
+        $rekrutmenAktif = Rekrutmen::with('seleksiTahap')->where('is_aktif', true)->first();
         $berita         = Berita::published()->latest()->take(3)->get();
         $galeri         = Galeri::latest()->take(6)->get();
 
-        return view('home.index', compact('pengaturan', 'rekrutmenAktif', 'berita', 'galeri'));
+        // Tahap seleksi untuk timeline — hanya dari rekrutmen aktif
+        $tahapSeleksi = $rekrutmenAktif
+            ? $rekrutmenAktif->seleksiTahap   // sudah orderBy('urutan')
+            : collect();
+
+        return view('home.index', compact(
+            'pengaturan', 'rekrutmenAktif', 'berita', 'galeri', 'tahapSeleksi'
+        ));
     }
 
     public function pengumuman()
@@ -47,8 +54,6 @@ class HomeController extends Controller
 
     public function beritaShow(Berita $beritum)
     {
-        abort_unless($beritum->is_published ?? true, 404);
-
         $rekrutmenAktif = Rekrutmen::where('is_aktif', true)->first();
         $beritaLain     = Berita::published()->where('id', '!=', $beritum->id)->latest()->take(3)->get();
 

@@ -47,9 +47,18 @@
       <a href="#tentang" class="btn-hero-secondary">Pelajari Lebih Lanjut</a>
     </div>
     <div class="hero-stats">
-      <div class="stat-item"><div class="stat-num">16<span class="stat-accent">+</span></div><div class="stat-label">Kuota Peserta</div></div>
-      <div class="stat-item"><div class="stat-num">3</div><div class="stat-label">Tahap Seleksi</div></div>
-      <div class="stat-item"><div class="stat-num">{{ date('Y') }}</div><div class="stat-label">Angkatan</div></div>
+      <div class="stat-item">
+        <div class="stat-num">{{ ($rekrutmenAktif && ($rekrutmenAktif->kuota_putra + $rekrutmenAktif->kuota_putri) > 0) ? ($rekrutmenAktif->kuota_putra + $rekrutmenAktif->kuota_putri) : '16' }}<span class="stat-accent">+</span></div>
+        <div class="stat-label">Kuota Peserta</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">{{ $tahapSeleksi->count() ?: '3' }}</div>
+        <div class="stat-label">Tahap Seleksi</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">{{ $rekrutmenAktif ? $rekrutmenAktif->tahun : date('Y') }}</div>
+        <div class="stat-label">Angkatan</div>
+      </div>
     </div>
   </div>
   <div class="hero-scroll"><div class="scroll-line"></div>Scroll untuk lebih</div>
@@ -119,20 +128,151 @@
   </div>
 </section>
 
-{{-- ALUR PENDAFTARAN --}}
+{{-- ── ALUR PENDAFTARAN — SINKRON DENGAN DATABASE ── --}}
 <section class="section daftar-section" id="pendaftaran">
   <div class="daftar-header">
     <div class="section-label">Alur Pendaftaran</div>
-    <h2 class="section-title">Tahapan Seleksi {{ date('Y') }}</h2>
+    <h2 class="section-title">Tahapan Seleksi {{ $rekrutmenAktif ? $rekrutmenAktif->tahun : date('Y') }}</h2>
     <p class="section-desc">Ikuti langkah-langkah berikut untuk mendaftarkan diri sebagai calon Paskibra Kecamatan Compreng.</p>
   </div>
+
   <div class="timeline">
     <div class="timeline-progress"></div>
-    <div class="tl-step"><div class="tl-dot done">✓</div><div class="tl-date">Mar – Apr {{ date('Y') }}</div><div class="tl-title">Pendaftaran Online</div><div class="tl-desc">Buat akun, isi profil lengkap, dan upload semua dokumen persyaratan</div></div>
-    <div class="tl-step"><div class="tl-dot active">2</div><div class="tl-date">Mei {{ date('Y') }}</div><div class="tl-title">Seleksi Administrasi</div><div class="tl-desc">Verifikasi berkas dan kelengkapan dokumen oleh panitia</div></div>
-    <div class="tl-step"><div class="tl-dot">3</div><div class="tl-date">Mei {{ date('Y') }}</div><div class="tl-title">Seleksi Fisik</div><div class="tl-desc">Tes kesehatan, pengukuran fisik, dan kemampuan baris-berbaris</div></div>
-    <div class="tl-step"><div class="tl-dot">4</div><div class="tl-date">Mei {{ date('Y') }}</div><div class="tl-title">Wawancara & TIU</div><div class="tl-desc">Tes wawancara, wawasan kebangsaan, dan Tes Intelegensi Umum</div></div>
-    <div class="tl-step"><div class="tl-dot">17</div><div class="tl-date">17 Agt {{ date('Y') }}</div><div class="tl-title">Upacara HUT RI</div><div class="tl-desc">Momen kehormatan tertinggi bagi pejuang Compreng</div></div>
+
+    @if($rekrutmenAktif)
+
+      @php
+        $now        = now();
+        $sudahTutup = $now->gt($rekrutmenAktif->tanggal_tutup);
+        $sedangBuka = $rekrutmenAktif->isSedangBuka();
+
+        // Pendaftaran dianggap DONE jika:
+        // - sudah lewat tanggal tutup, ATAU
+        // - ada tahap seleksi yang sudah aktif atau sudah diumumkan
+        $adaTahapBerjalan = $tahapSeleksi->contains(fn($t) => $t->is_aktif || $t->is_diumumkan);
+        $pendaftaranDone  = $sudahTutup || $adaTahapBerjalan;
+
+        $dotPendaftaran   = $pendaftaranDone ? 'done' : ($sedangBuka ? 'active' : '');
+        $labelPendaftaran = $pendaftaranDone ? '✓' : '1';
+      @endphp
+
+      {{-- Step 1: Pendaftaran Online --}}
+      <div class="tl-step">
+        <div class="tl-dot {{ $dotPendaftaran }}">{{ $labelPendaftaran }}</div>
+        <div class="tl-date">
+          {{ $rekrutmenAktif->tanggal_buka->format('d M') }} – {{ $rekrutmenAktif->tanggal_tutup->format('d M Y') }}
+        </div>
+        <div class="tl-title">Pendaftaran Online</div>
+        <div class="tl-desc">
+          Buat akun, isi profil lengkap, dan upload semua dokumen persyaratan
+          @if($sedangBuka && !$adaTahapBerjalan)
+            <br><span style="color:#1cc88a;font-size:12px;font-weight:600;">● Sedang Dibuka</span>
+          @elseif($pendaftaranDone && !$adaTahapBerjalan)
+            <br><span style="color:var(--teks-redup);font-size:12px;">Pendaftaran ditutup</span>
+          @elseif($pendaftaranDone)
+            <br><span style="color:var(--teks-redup);font-size:12px;">Pendaftaran selesai</span>
+          @endif
+        </div>
+      </div>
+
+      {{-- Tahap Seleksi dari DB --}}
+      @foreach($tahapSeleksi as $i => $tahap)
+        @php
+          // Logika status:
+          // done   = is_diumumkan true (hasil sudah diumumkan)
+          // active = is_aktif true tapi belum diumumkan
+          // kosong = belum dimulai
+          if ($tahap->is_diumumkan) {
+              $dot   = 'done';
+              $label = '✓';
+          } elseif ($tahap->is_aktif) {
+              $dot   = 'active';
+              $label = $tahap->urutan + 1;
+          } else {
+              $dot   = '';
+              $label = $tahap->urutan + 1;
+          }
+
+          $tglPengumuman = $tahap->tanggal_pengumuman
+              ? $tahap->tanggal_pengumuman->format('d M Y')
+              : null;
+        @endphp
+
+        <div class="tl-step">
+          <div class="tl-dot {{ $dot }}">{{ $label }}</div>
+          <div class="tl-date">
+            @if($tglPengumuman)
+              Pengumuman: {{ $tglPengumuman }}
+            @else
+              {{ $rekrutmenAktif->tahun }}
+            @endif
+          </div>
+          <div class="tl-title">{{ $tahap->nama }}</div>
+          <div class="tl-desc">
+            {{ $tahap->deskripsi ?: 'Proses seleksi tahap '.$tahap->urutan }}
+            @if($tahap->is_aktif && !$tahap->is_diumumkan)
+              <br><span style="color:#f6c23e;font-size:12px;font-weight:600;">● Sedang Berlangsung</span>
+            @elseif($tahap->is_diumumkan)
+              <br><span style="color:#1cc88a;font-size:12px;font-weight:600;">✓ Hasil Diumumkan</span>
+            @endif
+          </div>
+        </div>
+      @endforeach
+
+      {{-- Step Final: 17 Agustus --}}
+      @php
+        $tahunIni   = $rekrutmenAktif->tahun;
+        $tgl17Agt   = \Carbon\Carbon::create($tahunIni, 8, 17);
+        $sudah17Agt = $now->gte($tgl17Agt);
+        // Selesai 17 Agustus jika semua tahap diumumkan dan hari sudah lewat
+        $semuaDone  = $tahapSeleksi->isNotEmpty() && $tahapSeleksi->every(fn($t) => $t->is_diumumkan);
+        $dot17      = ($sudah17Agt && $semuaDone) ? 'done' : ($sudah17Agt ? 'active' : '');
+        $label17    = ($sudah17Agt && $semuaDone) ? '✓' : '17';
+      @endphp
+
+      <div class="tl-step">
+        <div class="tl-dot {{ $dot17 }}">{{ $label17 }}</div>
+        <div class="tl-date">17 Agustus {{ $tahunIni }}</div>
+        <div class="tl-title">Upacara HUT RI ke-{{ $tahunIni - 1945 }}</div>
+        <div class="tl-desc">
+          Momen kehormatan tertinggi bagi pejuang Compreng
+          @if($sudah17Agt && $semuaDone)
+            <br><span style="color:#1cc88a;font-size:12px;font-weight:600;">🎉 Selesai</span>
+          @elseif($sudah17Agt)
+            <br><span style="color:#f6c23e;font-size:12px;font-weight:600;">● Berlangsung</span>
+          @endif
+        </div>
+      </div>
+
+    @else
+
+      {{-- Tidak ada rekrutmen aktif — tampil placeholder --}}
+      <div class="tl-step">
+        <div class="tl-dot">1</div>
+        <div class="tl-date">TBA</div>
+        <div class="tl-title">Pendaftaran Online</div>
+        <div class="tl-desc">Buat akun, isi profil lengkap, dan upload semua dokumen persyaratan</div>
+      </div>
+      <div class="tl-step">
+        <div class="tl-dot">2</div>
+        <div class="tl-date">TBA</div>
+        <div class="tl-title">Seleksi Administrasi</div>
+        <div class="tl-desc">Verifikasi berkas dan kelengkapan dokumen oleh panitia</div>
+      </div>
+      <div class="tl-step">
+        <div class="tl-dot">3</div>
+        <div class="tl-date">TBA</div>
+        <div class="tl-title">Seleksi Lanjutan</div>
+        <div class="tl-desc">Tes fisik, wawancara, dan penilaian akhir oleh panitia</div>
+      </div>
+      <div class="tl-step">
+        <div class="tl-dot">17</div>
+        <div class="tl-date">17 Agustus {{ date('Y') }}</div>
+        <div class="tl-title">Upacara HUT RI ke-{{ date('Y') - 1945 }}</div>
+        <div class="tl-desc">Momen kehormatan tertinggi bagi pejuang Compreng</div>
+      </div>
+
+    @endif
   </div>
 </section>
 
@@ -147,33 +287,22 @@
   </div>
 </section>
 
-{{-- ── BERITA: 3 terbaru + tombol lihat semua ── --}}
+{{-- BERITA --}}
 <section class="section" id="berita">
   <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:32px;">
     <div>
       <div class="section-label">Berita & Info</div>
       <h2 class="section-title" style="margin-bottom:0;">Informasi Terkini</h2>
     </div>
-    <a href="{{ route('berita.index') }}" style="
-      display:inline-flex;align-items:center;gap:8px;
-      border:1px solid rgba(204,0,0,.4);color:#cc0000;
-      padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;
-      text-decoration:none;transition:all .2s;white-space:nowrap;
-    " onmouseover="this.style.background='rgba(204,0,0,.08)'" onmouseout="this.style.background='transparent'">
-      Semua Berita
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    <a href="{{ route('berita.index') }}" style="display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(204,0,0,.4);color:#cc0000;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;text-decoration:none;transition:all .2s;white-space:nowrap;" onmouseover="this.style.background='rgba(204,0,0,.08)'" onmouseout="this.style.background='transparent'">
+      Semua Berita <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
     </a>
   </div>
-
   <div class="news-grid">
     @forelse($berita as $i => $b)
     <a href="{{ route('berita.show', $b) }}" class="news-card {{ $i === 0 ? 'featured' : '' }}">
       <div class="news-img">
-        @if($b->gambar)
-          <img src="{{ asset('storage/'.$b->gambar) }}" alt="{{ $b->judul }}" style="width:100%;height:100%;object-fit:cover;">
-        @else
-          🏛️
-        @endif
+        @if($b->gambar)<img src="{{ asset('storage/'.$b->gambar) }}" alt="{{ $b->judul }}" style="width:100%;height:100%;object-fit:cover;">@else🏛️@endif
       </div>
       <div class="news-body">
         <div class="news-cat">Berita</div>
@@ -194,34 +323,22 @@
   </div>
 </section>
 
-{{-- ── GALERI: 6 foto terbaru + tombol lihat semua ── --}}
+{{-- GALERI --}}
 <section class="section" id="galeri">
   <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:32px;">
     <div>
       <div class="section-label">Galeri</div>
       <h2 class="section-title" style="margin-bottom:0;">Momen Bersejarah</h2>
     </div>
-    <a href="{{ route('galeri.index') }}" style="
-      display:inline-flex;align-items:center;gap:8px;
-      border:1px solid rgba(204,0,0,.4);color:#cc0000;
-      padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;
-      text-decoration:none;transition:all .2s;white-space:nowrap;
-    " onmouseover="this.style.background='rgba(204,0,0,.08)'" onmouseout="this.style.background='transparent'">
-      Semua Foto
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    <a href="{{ route('galeri.index') }}" style="display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(204,0,0,.4);color:#cc0000;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;text-decoration:none;transition:all .2s;white-space:nowrap;" onmouseover="this.style.background='rgba(204,0,0,.08)'" onmouseout="this.style.background='transparent'">
+      Semua Foto <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
     </a>
   </div>
-
   <div class="gallery-grid">
     @forelse($galeri as $g)
     <a href="{{ route('galeri.show', $g) }}" class="gallery-item">
-      <img src="{{ asset('storage/'.$g->foto) }}" alt="{{ $g->judul }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
-      {{-- Overlay hover dengan judul --}}
-      <div style="
-        position:absolute;inset:0;
-        background:linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 60%);
-        opacity:0;transition:opacity .25s;display:flex;align-items:flex-end;padding:14px;
-      " class="gallery-overlay">
+      <img src="{{ asset('storage/'.$g->path) }}" alt="{{ $g->judul }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+      <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 60%);opacity:0;transition:opacity .25s;display:flex;align-items:flex-end;padding:14px;" class="gallery-overlay">
         <span style="color:#fff;font-size:13px;font-weight:600;line-height:1.3;">{{ $g->judul }}</span>
       </div>
     </a>
