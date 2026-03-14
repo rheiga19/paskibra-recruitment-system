@@ -6,6 +6,11 @@ use App\Http\Controllers\HomeController;
 // ── HOME ────────────────────────────────────────────────────────────
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/pengumuman', [HomeController::class, 'pengumuman'])->name('pengumuman');
+// ── HOME PUBLIK ──
+Route::get('/berita',        [\App\Http\Controllers\HomeController::class, 'beritaIndex'])->name('berita.index');
+Route::get('/berita/{beritum}', [\App\Http\Controllers\HomeController::class, 'beritaShow'])->name('berita.show');
+Route::get('/galeri',        [\App\Http\Controllers\HomeController::class, 'galeriIndex'])->name('galeri.index');
+Route::get('/galeri/{galeri}', [\App\Http\Controllers\HomeController::class, 'galeriShow'])->name('galeri.show');
 
 // ── REDIRECT DASHBOARD ──────────────────────────────────────────────
 Route::get('/dashboard', function () {
@@ -64,11 +69,20 @@ Route::middleware(['auth', 'role:admin'])
         ->name('seleksi.togglePengumuman');
 
     // ── Berita ──
-    Route::get('berita',        fn() => view('admin.berita.index'))->name('berita.index');
-    Route::get('berita/create', fn() => view('admin.berita.form')) ->name('berita.create');
+    // PENTING: route statis (create) harus di atas route dinamis ({beritum})
+    Route::get   ('berita',                   [\App\Http\Controllers\Admin\BeritaController::class, 'index'])        ->name('berita.index');
+    Route::get   ('berita/create',            [\App\Http\Controllers\Admin\BeritaController::class, 'create'])       ->name('berita.create');
+    Route::post  ('berita',                   [\App\Http\Controllers\Admin\BeritaController::class, 'store'])        ->name('berita.store');
+    Route::get   ('berita/{beritum}/edit',    [\App\Http\Controllers\Admin\BeritaController::class, 'edit'])         ->name('berita.edit');
+    Route::put   ('berita/{beritum}',         [\App\Http\Controllers\Admin\BeritaController::class, 'update'])       ->name('berita.update');
+    Route::delete('berita/{beritum}',         [\App\Http\Controllers\Admin\BeritaController::class, 'destroy'])      ->name('berita.destroy');
+    Route::patch ('berita/{beritum}/publish', [\App\Http\Controllers\Admin\BeritaController::class, 'togglePublish'])->name('berita.publish');
 
     // ── Galeri ──
-    Route::get('galeri', fn() => view('admin.galeri.index'))->name('galeri.index');
+    Route::get   ('galeri',          [\App\Http\Controllers\Admin\GaleriController::class, 'index'])  ->name('galeri.index');
+    Route::post  ('galeri',          [\App\Http\Controllers\Admin\GaleriController::class, 'store'])  ->name('galeri.store');
+    Route::put   ('galeri/{galeri}', [\App\Http\Controllers\Admin\GaleriController::class, 'update']) ->name('galeri.update');
+    Route::delete('galeri/{galeri}', [\App\Http\Controllers\Admin\GaleriController::class, 'destroy'])->name('galeri.destroy');
 
     // ── Manajemen User ──
     Route::resource('users', \App\Http\Controllers\Admin\UserController::class)
@@ -77,8 +91,8 @@ Route::middleware(['auth', 'role:admin'])
         ->name('users.reset-password');
 
     // ── Pengaturan ──
-    Route::get ('pengaturan', [\App\Http\Controllers\Admin\PengaturanController::class, 'edit'])  ->name('pengaturan.edit');
-Route::put ('pengaturan', [\App\Http\Controllers\Admin\PengaturanController::class, 'update'])->name('pengaturan.update');
+    Route::get('pengaturan',  [\App\Http\Controllers\Admin\PengaturanController::class, 'edit'])  ->name('pengaturan.edit');
+    Route::put('pengaturan',  [\App\Http\Controllers\Admin\PengaturanController::class, 'update'])->name('pengaturan.update');
 });
 
 // ══════════════════════════════════════════════════════════════════════

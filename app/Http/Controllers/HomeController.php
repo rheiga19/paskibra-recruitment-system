@@ -25,17 +25,49 @@ class HomeController extends Controller
         $pengaturan     = Pengaturan::ambil();
         $rekrutmenAktif = Rekrutmen::where('is_aktif', true)->first();
 
-        // Data lulus hanya dimuat kalau admin sudah aktifkan pengumuman
         $lulusList = collect();
-
         if ($pengaturan->pengumuman_aktif) {
             $lulusList = Pendaftaran::with('rekrutmen')
                 ->where('is_lulus_final', true)
-                ->orderBy('jenis_kelamin')   // L (Putra) dulu, lalu P (Putri)
+                ->orderBy('jenis_kelamin')
                 ->orderBy('nama_lengkap')
                 ->get(['no_pendaftaran', 'nama_lengkap', 'jenis_kelamin', 'nama_sekolah', 'rekrutmen_id']);
         }
 
-        return view('home.pengumuman.pengumuman', compact('pengaturan', 'rekrutmenAktif', 'lulusList'));
+        return view('home.pengumuman.index', compact('pengaturan', 'rekrutmenAktif', 'lulusList'));
+    }
+
+    public function beritaIndex()
+    {
+        $rekrutmenAktif = Rekrutmen::where('is_aktif', true)->first();
+        $berita         = Berita::published()->latest()->paginate(9);
+
+        return view('home.berita.index', compact('rekrutmenAktif', 'berita'));
+    }
+
+    public function beritaShow(Berita $beritum)
+    {
+        abort_unless($beritum->is_published ?? true, 404);
+
+        $rekrutmenAktif = Rekrutmen::where('is_aktif', true)->first();
+        $beritaLain     = Berita::published()->where('id', '!=', $beritum->id)->latest()->take(3)->get();
+
+        return view('home.berita.show', compact('rekrutmenAktif', 'beritum', 'beritaLain'));
+    }
+
+    public function galeriIndex()
+    {
+        $rekrutmenAktif = Rekrutmen::where('is_aktif', true)->first();
+        $galeri         = Galeri::latest()->paginate(12);
+
+        return view('home.galeri.index', compact('rekrutmenAktif', 'galeri'));
+    }
+
+    public function galeriShow(Galeri $galeri)
+    {
+        $rekrutmenAktif = Rekrutmen::where('is_aktif', true)->first();
+        $galeriLain     = Galeri::where('id', '!=', $galeri->id)->latest()->take(6)->get();
+
+        return view('home.galeri.show', compact('rekrutmenAktif', 'galeri', 'galeriLain'));
     }
 }

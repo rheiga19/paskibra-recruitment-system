@@ -82,30 +82,17 @@
 {{-- TENTANG --}}
 <section class="section" id="tentang">
   <div class="about-grid">
-
-    {{-- VISUAL: gambar paskibra.png menggantikan emoji --}}
     <div class="about-visual">
       <div class="about-card-main" style="padding:0;overflow:visible;background:none;border:none;">
-
-        {{-- Frame foto utama --}}
         <div style="position:relative;border-radius:20px;overflow:hidden;aspect-ratio:4/3;box-shadow:0 24px 64px rgba(0,0,0,.5);">
-          <img
-            src="{{ asset('images/paskibra1.png') }}"
-            alt="Paskibra Kecamatan Compreng"
-            style="width:100%;height:100%;object-fit:cover;display:block;"
-          >
-          {{-- Overlay gradient bawah --}}
+          <img src="{{ asset('images/paskibra1.png') }}" alt="Paskibra Kecamatan Compreng" style="width:100%;height:100%;object-fit:cover;display:block;">
           <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.65) 0%,transparent 55%);pointer-events:none;"></div>
-          {{-- Keterangan bawah foto --}}
           <div style="position:absolute;bottom:0;left:0;right:0;padding:20px 22px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;color:#fff;line-height:1.2;">PASKIBRA {{ date('Y') }}</div>
             <div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:3px;">Kecamatan Compreng, Kabupaten Subang</div>
           </div>
-          {{-- Badge resmi pojok kanan atas --}}
           <div style="position:absolute;top:14px;right:14px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:5px 13px;font-size:12px;color:#fff;font-weight:700;letter-spacing:1px;">🇮🇩 RESMI</div>
         </div>
-
-        {{-- Badge program resmi di bawah foto --}}
         <div class="about-card-badge" style="margin-top:14px;">
           <div class="badge-icon-wrap">🎖️</div>
           <div>
@@ -113,17 +100,12 @@
             <div class="badge-text-sub">Kecamatan Compreng, Subang</div>
           </div>
         </div>
-
       </div>
-
-      {{-- Float card angka 17 --}}
       <div class="about-float-card">
         <div class="float-num">17</div>
         <div class="float-label">Agustus Setiap Tahun</div>
       </div>
     </div>
-
-    {{-- TEKS TENTANG --}}
     <div>
       <div class="section-label">Tentang Kami</div>
       <h2 class="section-title">Menjaga Kehormatan<br>Sang Saka Merah Putih</h2>
@@ -134,7 +116,6 @@
         <div class="feature-row"><div class="feature-icon">🤝</div><div><div class="feature-title">Jaringan Alumni</div><div class="feature-desc">Bergabung dengan komunitas alumni Paskibra Compreng yang terus berkembang setiap tahunnya.</div></div></div>
       </div>
     </div>
-
   </div>
 </section>
 
@@ -160,21 +141,39 @@
   <div class="section-label">Persyaratan</div>
   <h2 class="section-title">Syarat & Ketentuan Pendaftar</h2>
   <div class="req-grid">
-    <div class="req-card"><div class="req-card-icon">👤</div><div class="req-card-title">Persyaratan Umum</div><ul><li>Warga Negara Indonesia</li><li>Berdomisili di Kecamatan Compreng</li><li>Siswa aktif SMP/MTs/SMA/MA/SMK</li><li>Berbadan sehat jasmani & rohani</li><li>Belum pernah menjadi anggota Paskibra</li></ul></div>
+    <div class="req-card"><div class="req-card-icon">👤</div><div class="req-card-title">Persyaratan Umum</div><ul><li>Warga Negara Indonesia</li><li>Berdomisili di Kecamatan Compreng</li><li>Siswa aktif SMA/MA/SMK</li><li>Berbadan sehat jasmani & rohani</li><li>Belum pernah menjadi anggota Paskibra</li></ul></div>
     <div class="req-card"><div class="req-card-icon">📄</div><div class="req-card-title">Dokumen Wajib</div><ul><li>KTP Pelajar / Kartu Pelajar</li><li>Akta Kelahiran</li><li>Rapor semester terakhir</li><li>Surat keterangan sehat dari dokter</li><li>Pas foto terbaru 4×6</li><li>Surat izin orang tua / wali</li></ul></div>
-    <div class="req-card"><div class="req-card-icon">🏃</div><div class="req-card-title">Kriteria Fisik</div><ul><li>Tinggi badan min. 163 cm (putra)</li><li>Tinggi badan min. 155 cm (putri)</li><li>Lulus tes kesehatan dasar</li><li>Kemampuan baris-berbaris dasar</li><li>Bebas narkoba dan tidak merokok</li></ul></div>
+    <div class="req-card"><div class="req-card-icon">🏃</div><div class="req-card-title">Kriteria Fisik</div><ul><li>Tinggi badan min. 165 cm (putra)</li><li>Tinggi badan min. 155 cm (putri)</li><li>Lulus tes kesehatan dasar</li><li>Kemampuan baris-berbaris dasar</li><li>Bebas narkoba dan tidak merokok</li></ul></div>
   </div>
 </section>
 
-{{-- BERITA --}}
+{{-- ── BERITA: 3 terbaru + tombol lihat semua ── --}}
 <section class="section" id="berita">
-  <div class="section-label">Berita & Info</div>
-  <h2 class="section-title">Informasi Terkini</h2>
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:32px;">
+    <div>
+      <div class="section-label">Berita & Info</div>
+      <h2 class="section-title" style="margin-bottom:0;">Informasi Terkini</h2>
+    </div>
+    <a href="{{ route('berita.index') }}" style="
+      display:inline-flex;align-items:center;gap:8px;
+      border:1px solid rgba(204,0,0,.4);color:#cc0000;
+      padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;
+      text-decoration:none;transition:all .2s;white-space:nowrap;
+    " onmouseover="this.style.background='rgba(204,0,0,.08)'" onmouseout="this.style.background='transparent'">
+      Semua Berita
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+
   <div class="news-grid">
     @forelse($berita as $i => $b)
-    <a href="#" class="news-card {{ $i === 0 ? 'featured' : '' }}">
+    <a href="{{ route('berita.show', $b) }}" class="news-card {{ $i === 0 ? 'featured' : '' }}">
       <div class="news-img">
-        @if($b->gambar) <img src="{{ asset('storage/'.$b->gambar) }}" alt="{{ $b->judul }}"> @else 🏛️ @endif
+        @if($b->gambar)
+          <img src="{{ asset('storage/'.$b->gambar) }}" alt="{{ $b->judul }}" style="width:100%;height:100%;object-fit:cover;">
+        @else
+          🏛️
+        @endif
       </div>
       <div class="news-body">
         <div class="news-cat">Berita</div>
@@ -183,18 +182,49 @@
       </div>
     </a>
     @empty
-    <div class="news-card featured"><div class="news-img">🏛️</div><div class="news-body"><div class="news-cat">Pengumuman</div><div class="news-title">Pendaftaran Paskibra {{ date('Y') }} Resmi Dibuka</div><div class="news-meta">{{ date('d M Y') }}</div></div></div>
+    <div class="news-card featured">
+      <div class="news-img">🏛️</div>
+      <div class="news-body">
+        <div class="news-cat">Pengumuman</div>
+        <div class="news-title">Pendaftaran Paskibra {{ date('Y') }} Resmi Dibuka</div>
+        <div class="news-meta">{{ date('d M Y') }}</div>
+      </div>
+    </div>
     @endforelse
   </div>
 </section>
 
-{{-- GALERI --}}
+{{-- ── GALERI: 6 foto terbaru + tombol lihat semua ── --}}
 <section class="section" id="galeri">
-  <div class="section-label">Galeri</div>
-  <h2 class="section-title">Momen Bersejarah</h2>
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:32px;">
+    <div>
+      <div class="section-label">Galeri</div>
+      <h2 class="section-title" style="margin-bottom:0;">Momen Bersejarah</h2>
+    </div>
+    <a href="{{ route('galeri.index') }}" style="
+      display:inline-flex;align-items:center;gap:8px;
+      border:1px solid rgba(204,0,0,.4);color:#cc0000;
+      padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;
+      text-decoration:none;transition:all .2s;white-space:nowrap;
+    " onmouseover="this.style.background='rgba(204,0,0,.08)'" onmouseout="this.style.background='transparent'">
+      Semua Foto
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+
   <div class="gallery-grid">
     @forelse($galeri as $g)
-    <a href="#" class="gallery-item"><img src="{{ asset('storage/'.$g->foto) }}" alt="{{ $g->judul }}"></a>
+    <a href="{{ route('galeri.show', $g) }}" class="gallery-item">
+      <img src="{{ asset('storage/'.$g->foto) }}" alt="{{ $g->judul }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+      {{-- Overlay hover dengan judul --}}
+      <div style="
+        position:absolute;inset:0;
+        background:linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 60%);
+        opacity:0;transition:opacity .25s;display:flex;align-items:flex-end;padding:14px;
+      " class="gallery-overlay">
+        <span style="color:#fff;font-size:13px;font-weight:600;line-height:1.3;">{{ $g->judul }}</span>
+      </div>
+    </a>
     @empty
     <div class="gallery-item">🎖️</div>
     <div class="gallery-item">🏛️</div>
@@ -223,7 +253,7 @@
     </div>
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">Berapa tinggi badan minimum yang diperlukan? <span class="faq-toggle">+</span></div>
-      <div class="faq-a">Tinggi badan minimum adalah 163 cm untuk peserta putra dan 155 cm untuk peserta putri.</div>
+      <div class="faq-a">Tinggi badan minimum adalah 165 cm untuk peserta putra dan 155 cm untuk peserta putri.</div>
     </div>
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">Apakah siswa SMP bisa mendaftar? <span class="faq-toggle">+</span></div>
@@ -256,6 +286,11 @@
   <span id="themeIcon">☀️</span>
 </button>
 
+<style>
+  .gallery-item:hover .gallery-overlay { opacity: 1 !important; }
+  .gallery-item { position: relative; overflow: hidden; }
+</style>
+
 <script>
   window.addEventListener('scroll', () => {
     const nav = document.getElementById('navbar');
@@ -278,7 +313,7 @@
       if (e.isIntersecting) { e.target.style.opacity='1'; e.target.style.transform='translateY(0)'; }
     });
   }, { threshold: 0.1 });
-  document.querySelectorAll('.req-card,.news-card,.faq-item,.feature-row,.tl-step').forEach(el => {
+  document.querySelectorAll('.req-card,.news-card,.faq-item,.feature-row,.tl-step,.gallery-item').forEach(el => {
     el.style.opacity='0'; el.style.transform='translateY(20px)';
     el.style.transition='opacity 0.5s ease, transform 0.5s ease';
     observer.observe(el);
