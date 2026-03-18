@@ -1,15 +1,6 @@
 @extends('layouts.app')
 @section('title', 'Manajemen Berita')
 
-@push('css')
-<style>
-.berita-card { border:none; border-radius:14px; box-shadow:0 2px 16px rgba(0,0,0,.07); overflow:hidden; transition:.2s; }
-.berita-card:hover { transform:translateY(-3px); box-shadow:0 6px 24px rgba(0,0,0,.12); }
-.berita-thumb { width:100%; height:160px; object-fit:cover; }
-.berita-thumb-placeholder { width:100%; height:160px; background:linear-gradient(135deg,#f0f0f0,#e0e0e0); display:flex; align-items:center; justify-content:center; color:#ccc; font-size:32px; }
-</style>
-@endpush
-
 @section('content')
 <div class="section-header">
     <h1>Manajemen Berita</h1>
@@ -19,99 +10,137 @@
     </div>
 </div>
 
-@if(session('success'))
-<div class="alert alert-success alert-dismissible fade show">
-    <i class="fas fa-check-circle mr-1"></i> {{ session('success') }}
-    <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-</div>
-@endif
-
-<div class="card" style="border:none;border-radius:14px;box-shadow:0 2px 16px rgba(0,0,0,.07);">
-    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <h4 class="mb-0"><i class="fas fa-newspaper mr-2 text-primary"></i>Daftar Berita</h4>
-        <div class="d-flex gap-2 flex-wrap align-items-center">
-            <form method="GET" class="d-flex gap-2">
-                <select name="status" class="form-control form-control-sm" style="width:auto;border-radius:8px;" onchange="this.form.submit()">
-                    <option value="">Semua Status</option>
-                    <option value="1" {{ request('status')==='1'?'selected':'' }}>Published</option>
-                    <option value="0" {{ request('status')==='0'?'selected':'' }}>Draft</option>
-                </select>
-                <input type="text" name="search" class="form-control form-control-sm"
-                       placeholder="Cari judul..." value="{{ request('search') }}"
-                       style="width:180px;border-radius:8px;">
-                <button class="btn btn-sm btn-primary" style="border-radius:8px;"><i class="fas fa-search"></i></button>
-                @if(request('search') || request()->has('status'))
-                <a href="{{ route('admin.berita.index') }}" class="btn btn-sm btn-secondary" style="border-radius:8px;"><i class="fas fa-times"></i></a>
-                @endif
-            </form>
-            <a href="{{ route('admin.berita.create') }}" class="btn btn-danger btn-sm" style="border-radius:8px;">
+{{-- Filter --}}
+<div class="card">
+    <div class="card-header">
+        <h4><i class="fas fa-filter mr-2"></i>Filter</h4>
+        <div class="card-header-action">
+            <a href="{{ route('admin.berita.create') }}" class="btn btn-danger btn-sm">
                 <i class="fas fa-plus mr-1"></i> Tambah Berita
             </a>
         </div>
     </div>
-
     <div class="card-body">
-        @if($berita->isEmpty())
-        <div class="text-center py-5 text-muted">
-            <i class="fas fa-newspaper fa-3x mb-3" style="opacity:.3;"></i>
-            <p>Belum ada berita. <a href="{{ route('admin.berita.create') }}">Tambah sekarang</a>.</p>
-        </div>
-        @else
-        <div class="row">
-            @foreach($berita as $b)
-            <div class="col-sm-6 col-lg-4 col-xl-3 mb-4">
-                <div class="berita-card card h-100">
-                    @if($b->gambar)
-                        <img src="{{ $b->gambar_url }}" alt="{{ $b->judul }}" class="berita-thumb">
-                    @else
-                        <div class="berita-thumb-placeholder"><i class="fas fa-image"></i></div>
-                    @endif
-                    <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge badge-{{ $b->is_published ? 'success' : 'secondary' }}" style="font-size:10px;">
-                                {{ $b->is_published ? 'Published' : 'Draft' }}
-                            </span>
-                            <small class="text-muted" style="font-size:10px;">{{ $b->created_at->format('d M Y') }}</small>
-                        </div>
-                        <p class="font-weight-bold mb-1" style="font-size:13px;line-height:1.4;">
-                            {{ Str::limit($b->judul, 55) }}
-                        </p>
-                        <p class="text-muted mb-0" style="font-size:11px;">{{ $b->ringkasan }}</p>
-                    </div>
-                    <div class="card-footer bg-white p-2 border-top">
-                        <div class="d-flex gap-1">
-                            <a href="{{ route('admin.berita.edit', $b) }}"
-                               class="btn btn-sm btn-primary flex-fill" style="border-radius:8px;font-size:11px;">
-                                <i class="fas fa-edit"></i> Edit
-                            </a>
-                            <form action="{{ route('admin.berita.publish', $b) }}" method="POST">
-                                @csrf @method('PATCH')
-                                <button class="btn btn-sm btn-{{ $b->is_published ? 'warning':'success' }}"
-                                        style="border-radius:8px;font-size:11px;" title="{{ $b->is_published ? 'Jadikan Draft':'Publish' }}">
-                                    <i class="fas fa-{{ $b->is_published ? 'eye-slash':'eye' }}"></i>
-                                </button>
-                            </form>
-                            <form action="{{ route('admin.berita.destroy', $b) }}" method="POST"
-                                  onsubmit="return confirm('Hapus berita ini?')">
-                                @csrf @method('DELETE')
-                                <button class="btn btn-sm btn-danger" style="border-radius:8px;font-size:11px;">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
+        <form method="GET" action="{{ route('admin.berita.index') }}">
+            <div class="row align-items-end">
+                <div class="col-md-3 mb-3">
+                    <label class="font-weight-bold">Status</label>
+                    <select name="status" class="form-control" onchange="this.form.submit()">
+                        <option value="">Semua Status</option>
+                        <option value="1" {{ request('status')==='1' ? 'selected' : '' }}>Published</option>
+                        <option value="0" {{ request('status')==='0' ? 'selected' : '' }}>Draft</option>
+                    </select>
+                </div>
+                <div class="col-md-5 mb-3">
+                    <label class="font-weight-bold">Cari Judul</label>
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control"
+                               placeholder="Cari judul berita..."
+                               value="{{ request('search') }}">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
+                <div class="col-auto mb-3">
+                    @if(request('search') || request()->has('status') && request('status') !== '')
+                    <a href="{{ route('admin.berita.index') }}" class="btn btn-secondary">
+                        <i class="fas fa-times mr-1"></i> Reset
+                    </a>
+                    @endif
+                </div>
             </div>
-            @endforeach
-        </div>
-
-        @if($berita->hasPages())
-        <div class="d-flex justify-content-between align-items-center mt-2 border-top pt-3">
-            <small class="text-muted">{{ $berita->firstItem() }}–{{ $berita->lastItem() }} dari {{ $berita->total() }}</small>
-            {{ $berita->withQueryString()->links() }}
-        </div>
-        @endif
-        @endif
+        </form>
     </div>
 </div>
+
+{{-- Tabel --}}
+<div class="card">
+    <div class="card-header">
+        <h4><i class="fas fa-newspaper mr-2"></i>Daftar Berita</h4>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped table-md mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Judul</th>
+                        <th>Status</th>
+                        <th>Tanggal</th>
+                        <th class="text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($berita as $b)
+                    <tr>
+                        <td>{{ $loop->iteration }}</td>
+                        <td>
+                            <b>{{ Str::limit($b->judul, 60) }}</b>
+                            @if($b->ringkasan)
+                            <br><small class="text-muted">{{ Str::limit($b->ringkasan, 80) }}</small>
+                            @endif
+                        </td>
+                        <td>
+                            <div class="badge badge-{{ $b->is_published ? 'success' : 'secondary' }}">
+                                {{ $b->is_published ? 'Published' : 'Draft' }}
+                            </div>
+                        </td>
+                        <td>
+                            <small>{{ $b->created_at->format('d M Y') }}</small>
+                        </td>
+                        <td class="text-center">
+                            <a href="{{ route('admin.berita.edit', $b) }}"
+                               class="btn btn-sm btn-primary btn-icon">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form action="{{ route('admin.berita.publish', $b) }}" method="POST" class="d-inline">
+                                @csrf @method('PATCH')
+                                <button class="btn btn-sm btn-icon btn-{{ $b->is_published ? 'warning' : 'success' }}"
+                                        title="{{ $b->is_published ? 'Jadikan Draft' : 'Publish' }}">
+                                    <i class="fas fa-{{ $b->is_published ? 'eye-slash' : 'eye' }}"></i>
+                                </button>
+                            </form>
+                            <form action="{{ route('admin.berita.destroy', $b) }}" method="POST" class="d-inline"
+                                  onsubmit="return confirm('Hapus berita ini?')">
+                                @csrf @method('DELETE')
+                                <button class="btn btn-sm btn-icon btn-danger">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state" data-height="300">
+                                <div class="empty-state-icon">
+                                    <i class="fas fa-newspaper"></i>
+                                </div>
+                                <h2>Belum Ada Berita</h2>
+                                <p class="lead">Mulai tambahkan berita untuk ditampilkan ke publik.</p>
+                                <a href="{{ route('admin.berita.create') }}" class="btn btn-primary mt-3">
+                                    <i class="fas fa-plus mr-1"></i> Tambah Berita
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @if($berita->hasPages())
+    <div class="card-footer d-flex justify-content-between align-items-center">
+        <small class="text-muted">
+            {{ $berita->firstItem() }}–{{ $berita->lastItem() }} dari {{ $berita->total() }}
+        </small>
+        {{ $berita->withQueryString()->links() }}
+    </div>
+    @endif
+</div>
+
 @endsection

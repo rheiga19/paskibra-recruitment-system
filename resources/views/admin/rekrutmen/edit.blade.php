@@ -16,7 +16,7 @@
         <div class="card">
             <div class="card-header"><h4>Edit: {{ $rekrutmen->nama }}</h4></div>
             <div class="card-body">
-                <form action="{{ route('admin.rekrutmen.update', $rekrutmen) }}" method="POST">
+                <form action="{{ route('admin.rekrutmen.edit', $rekrutmen) }}" method="POST">
                     @csrf @method('PUT')
                     <div class="row">
                         <div class="col-md-3">

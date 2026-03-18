@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Pengumuman Kelulusan — {{ config('app.name') }}</title>
+  <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="{{ asset('css/home.css') }}">
   <style>
@@ -148,7 +149,6 @@
   @if(!$pengaturan->pengumuman_aktif)
   {{-- Belum diumumkan --}}
   <div class="pg-tunggu">
-    <span class="nd-icon">⏳</span>
     <h2>Pengumuman Belum Tersedia</h2>
     <p>Panitia belum mengumumkan hasil kelulusan seleksi.<br>Pantau terus halaman ini untuk informasi terbaru.</p>
     @if($rekrutmenAktif)
@@ -194,7 +194,7 @@
 
   <div class="tabel-box">
     <div class="tabel-head">
-      <h3>🏆 Daftar Peserta Lulus Seleksi</h3>
+      <h3>Daftar Peserta Lulus Seleksi</h3>
       <small id="jumlahTampil">{{ $lulusList->count() }} peserta</small>
     </div>
     <div class="tabel-scroll">

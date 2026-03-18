@@ -28,10 +28,10 @@
                     <label class="font-weight-bold">Status</label>
                     <select name="status" class="form-control">
                         <option value="">Semua Status</option>
-                        <option value="menunggu" {{ request('status') === 'menunggu' ? 'selected' : '' }}>Menunggu</option>
+                        <option value="menunggu"     {{ request('status') === 'menunggu'     ? 'selected' : '' }}>Menunggu</option>
                         <option value="diverifikasi" {{ request('status') === 'diverifikasi' ? 'selected' : '' }}>Diverifikasi</option>
-                        <option value="lulus" {{ request('status') === 'lulus' ? 'selected' : '' }}>Lulus</option>
-                        <option value="tidak_lulus" {{ request('status') === 'tidak_lulus' ? 'selected' : '' }}>Tidak Lulus</option>
+                        <option value="lulus"        {{ request('status') === 'lulus'        ? 'selected' : '' }}>Lulus</option>
+                        <option value="tidak_lulus"  {{ request('status') === 'tidak_lulus'  ? 'selected' : '' }}>Tidak Lulus</option>
                     </select>
                 </div>
                 <div class="col-md-2">
@@ -44,11 +44,14 @@
                 </div>
                 <div class="col-md-3">
                     <label class="font-weight-bold">Cari</label>
-                    <input type="text" name="search" class="form-control" placeholder="Nama / No. Daftar / NIK"
+                    <input type="text" name="search" class="form-control"
+                           placeholder="Nama / No. Daftar / NIK"
                            value="{{ request('search') }}">
                 </div>
                 <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-search mr-1"></i> Filter</button>
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fas fa-search mr-1"></i> Filter
+                    </button>
                 </div>
             </div>
         </form>
@@ -56,16 +59,32 @@
 </div>
 
 <div class="card">
-    <div class="card-header">
-        <h4>Hasil: {{ $pendaftaran->total() }} pendaftar</h4>
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h4 class="mb-0">Hasil: {{ $pendaftaran->total() }} pendaftar</h4>
+        <div class="d-flex gap-2 flex-wrap">
+            {{-- Download semua (ikut filter rekrutmen jika ada) --}}
+            <a href="{{ route('admin.pendaftaran.download-semua-zip') }}{{ request('rekrutmen_id') ? '?rekrutmen_id='.request('rekrutmen_id') : '' }}"
+               class="btn btn-outline-success btn-sm"
+               style="border-radius:8px;"
+               onclick="return confirm('Download ZIP semua dokumen peserta{{ request('rekrutmen_id') ? ' rekrutmen ini' : '' }}?')">
+                <i class="fas fa-download mr-1"></i>
+                Download Semua ZIP
+            </a>
+        </div>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-striped mb-0">
                 <thead>
                     <tr>
-                        <th>No. Daftar</th><th>Nama</th><th>JK</th>
-                        <th>Sekolah / Kelas</th><th>Rekrutmen</th><th>Status</th><th>Daftar</th><th>Aksi</th>
+                        <th>No. Daftar</th>
+                        <th>Nama</th>
+                        <th>JK</th>
+                        <th>Sekolah / Kelas</th>
+                        <th>Rekrutmen</th>
+                        <th>Status</th>
+                        <th>Daftar</th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -80,23 +99,44 @@
                         <td><small>{{ $p->nama_sekolah }}<br>{{ $p->jenjang }} Kelas {{ $p->kelas }}</small></td>
                         <td><small>{{ $p->rekrutmen->nama ?? '-' }}</small></td>
                         <td>
-                            @php $c = ['menunggu'=>'warning','diverifikasi'=>'info','lulus'=>'success','tidak_lulus'=>'danger'][$p->status] ?? 'secondary'; @endphp
+                            @php
+                                $c = ['menunggu'=>'warning','diverifikasi'=>'info','lulus'=>'success','tidak_lulus'=>'danger'][$p->status] ?? 'secondary';
+                            @endphp
                             <span class="badge badge-{{ $c }}">{{ $p->status_label }}</span>
                             @if($p->is_lulus_final)
                                 <span class="badge badge-success ml-1"><i class="fas fa-star"></i> Final</span>
                             @endif
                         </td>
                         <td><small class="text-muted">{{ $p->created_at->format('d M Y') }}</small></td>
-                        <td>
-                            <a href="{{ route('admin.pendaftaran.show', $p) }}" class="btn btn-sm btn-icon btn-primary" title="Detail"><i class="fas fa-eye"></i></a>
+                        <td class="text-nowrap">
+                            {{-- Detail --}}
+                            <a href="{{ route('admin.pendaftaran.show', $p) }}"
+                               class="btn btn-sm btn-icon btn-primary" title="Detail">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {{-- Download ZIP dokumen peserta ini --}}
+                            <a href="{{ route('admin.pendaftaran.dokumen-zip', $p) }}"
+                               class="btn btn-sm btn-icon btn-success" title="Download Dokumen ZIP">
+                                <i class="fas fa-file-archive"></i>
+                            </a>
+                            {{-- Hapus --}}
                             <form action="{{ route('admin.pendaftaran.destroy', $p) }}" method="POST" class="d-inline">
                                 @csrf @method('DELETE')
-                                <button class="btn btn-sm btn-icon btn-danger" onclick="return confirm('Hapus data pendaftaran ini?')"><i class="fas fa-trash"></i></button>
+                                <button class="btn btn-sm btn-icon btn-danger"
+                                        title="Hapus"
+                                        onclick="return confirm('Hapus data pendaftaran ini?')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </form>
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="8" class="text-center py-5 text-muted"><i class="fas fa-inbox fa-2x d-block mb-2"></i>Tidak ada data pendaftaran</td></tr>
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="fas fa-inbox fa-2x d-block mb-2"></i>
+                            Tidak ada data pendaftaran
+                        </td>
+                    </tr>
                     @endforelse
                 </tbody>
             </table>

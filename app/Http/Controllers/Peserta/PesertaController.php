@@ -99,6 +99,8 @@ class PesertaController extends Controller
     }
 
     // ── Dokumen — Upload ───────────────────────────────────────────────
+    // KEAMANAN: file disimpan di storage/app/private/dokumen (bukan public)
+    // Akses file hanya lewat route peserta.dokumen.lihat yang cek auth
     public function dokumenUpload(Request $request)
     {
         $jenisList = ['foto_4x6', 'ktp_pelajar', 'akta_kelahiran', 'rapor', 'surat_sehat', 'surat_izin_ortu'];
@@ -111,6 +113,7 @@ class PesertaController extends Controller
         $user  = auth()->user();
         $jenis = $request->jenis;
 
+        // Cek sudah mendaftar — dokumen dikunci
         $rekrutmenAktif = Rekrutmen::where('is_aktif', true)->latest()->first();
         if ($rekrutmenAktif) {
             $sudahDaftar = Pendaftaran::where('user_id', $user->id)
@@ -121,17 +124,22 @@ class PesertaController extends Controller
             }
         }
 
+        // Hapus file lama jika ada
         $lama = DokumenPeserta::where('user_id', $user->id)->where('jenis', $jenis)->first();
         if ($lama) {
-            Storage::disk('public')->delete($lama->path);
+            // Hapus dari private storage
+            Storage::disk('local')->delete($lama->path);
             $lama->delete();
         }
 
         $namaAsli = $request->file('file')->getClientOriginalName();
         $ext      = strtolower($request->file('file')->getClientOriginalExtension());
+        // Folder private: dokumen/{id}_{nama-slug}/
         $folder   = 'dokumen/' . $user->id . '_' . Str::slug($user->name);
         $namaFile = $jenis . '.' . $ext;
-        $path     = $request->file('file')->storeAs($folder, $namaFile, 'public');
+
+        // Simpan ke storage/app/private (disk: local) — TIDAK bisa diakses via URL
+        $path = $request->file('file')->storeAs($folder, $namaFile, 'local');
 
         DokumenPeserta::create([
             'user_id'   => $user->id,
@@ -141,6 +149,61 @@ class PesertaController extends Controller
         ]);
 
         return back()->with('success', 'Dokumen ' . (DokumenPeserta::JENIS[$jenis] ?? $jenis) . ' berhasil diupload.');
+    }
+
+    // ── Dokumen — Lihat / Serve (PRIVATE + AUTH) ───────────────────────
+    // Route: GET peserta/dokumen/{jenis}/lihat  → name: peserta.dokumen.lihat
+    public function dokumenLihat(string $jenis)
+    {
+        $jenisList = ['foto_4x6', 'ktp_pelajar', 'akta_kelahiran', 'rapor', 'surat_sehat', 'surat_izin_ortu'];
+        abort_unless(in_array($jenis, $jenisList), 422);
+
+        $dok = DokumenPeserta::where('user_id', auth()->id())
+                             ->where('jenis', $jenis)
+                             ->firstOrFail();
+
+        [$disk, $file, $mime] = $this->resolveFile($dok->path, $dok->nama_file);
+
+        return response($file, 200)
+            ->header('Content-Type', $mime)
+            ->header('Content-Disposition', 'inline; filename="' . $dok->nama_file . '"');
+    }
+
+    // ── Dokumen — Lihat milik peserta (untuk ADMIN/PANITIA) ────────────
+    // Route: GET admin/dokumen/{dokumenPeserta}/lihat → name: admin.dokumen.lihat
+    public function dokumenLihatAdmin(DokumenPeserta $dokumenPeserta)
+    {
+        abort_unless(
+            auth()->user()->isAdmin() || auth()->user()->isPanitia(),
+            403
+        );
+
+        [$disk, $file, $mime] = $this->resolveFile($dokumenPeserta->path, $dokumenPeserta->nama_file);
+
+        return response($file, 200)
+            ->header('Content-Type', $mime)
+            ->header('Content-Disposition', 'inline; filename="' . $dokumenPeserta->nama_file . '"');
+    }
+
+    // ── Helper: cari file di local dulu, fallback ke public ────────────
+    // Menangani dokumen lama (disk public) dan dokumen baru (disk local)
+    private function resolveFile(string $path, string $namaFile): array
+    {
+        // Coba disk local dulu (upload baru)
+        if (Storage::disk('local')->exists($path)) {
+            $mime = Storage::disk('local')->mimeType($path);
+            $file = Storage::disk('local')->get($path);
+            return ['local', $file, $mime];
+        }
+
+        // Fallback ke disk public (upload lama sebelum migrasi)
+        if (Storage::disk('public')->exists($path)) {
+            $mime = Storage::disk('public')->mimeType($path);
+            $file = Storage::disk('public')->get($path);
+            return ['public', $file, $mime];
+        }
+
+        abort(404, 'File dokumen tidak ditemukan.');
     }
 
     // ── Dokumen — Hapus ────────────────────────────────────────────────
@@ -163,7 +226,7 @@ class PesertaController extends Controller
 
         $dok = DokumenPeserta::where('user_id', $user->id)->where('jenis', $jenis)->first();
         if ($dok) {
-            Storage::disk('public')->delete($dok->path);
+            Storage::disk('local')->delete($dok->path);
             $dok->delete();
             return back()->with('success', 'Dokumen berhasil dihapus.');
         }
@@ -271,7 +334,7 @@ class PesertaController extends Controller
             'status'         => 'menunggu',
         ]);
 
-        // Snapshot dokumen ke dokumen_pendaftaran
+        // Snapshot dokumen ke dokumen_pendaftaran (path tetap sama, private)
         $dokumenPeserta = DokumenPeserta::where('user_id', $user->id)->get();
         foreach ($dokumenPeserta as $d) {
             DokumenPendaftaran::create([
@@ -294,7 +357,6 @@ class PesertaController extends Controller
 
         $hasilList = [];
         if ($pendaftaran) {
-            // Relasi 'tahap' sesuai nama di model SeleksiHasil (bukan seleksiTahap)
             $hasilList = $pendaftaran->hasilSeleksi()
                 ->with('tahap')
                 ->whereHas('tahap', fn($q) => $q->where('is_diumumkan', true))
@@ -303,6 +365,54 @@ class PesertaController extends Controller
         }
 
         return view('peserta.hasil.hasil-seleksi', compact('pendaftaran', 'hasilList'));
+    }
+
+    // ── Kartu Anggota ──────────────────────────────────────────────────
+    public function kartuAnggota()
+    {
+        $user        = auth()->user();
+        $rekrutmen   = Rekrutmen::where('is_aktif', true)->first();
+
+        $pendaftaran = Pendaftaran::with(['dokumen'])
+            ->where('user_id', $user->id)
+            ->where('is_lulus_final', true)
+            ->when($rekrutmen, fn($q) => $q->where('rekrutmen_id', $rekrutmen->id))
+            ->first();
+
+        if (!$pendaftaran) {
+            return back()->with('error', 'Kartu hanya tersedia untuk peserta yang lulus seleksi.');
+        }
+
+        return view('peserta.kartu-anggota', compact('pendaftaran', 'rekrutmen'));
+    }
+
+    // ── Rekap Absensi Peserta ──────────────────────────────────────────
+    public function absensiIndex()
+    {
+        $user         = auth()->user();
+        $rekrutmen    = Rekrutmen::where('is_aktif', true)->first();
+        $pendaftaran  = null;
+        $rekapAbsensi = collect();
+
+        if ($rekrutmen) {
+            $pendaftaran = Pendaftaran::where('user_id', $user->id)
+                ->where('rekrutmen_id', $rekrutmen->id)
+                ->where('is_lulus_final', true)
+                ->first();
+
+            if ($pendaftaran) {
+                $rekapAbsensi = \App\Models\Absensi::with('jadwal')
+                    ->where('pendaftaran_id', $pendaftaran->id)
+                    ->orderByDesc('created_at')
+                    ->get();
+            }
+        }
+
+        $totalHadir = $rekapAbsensi->where('status', 'hadir')->count();
+        $totalAll   = $rekapAbsensi->count();
+        $persen     = $totalAll > 0 ? round($totalHadir / $totalAll * 100) : 0;
+
+        return view('peserta.absensi', compact('pendaftaran', 'rekapAbsensi', 'totalHadir', 'totalAll', 'persen'));
     }
 
     // ── Helpers ────────────────────────────────────────────────────────
@@ -340,55 +450,26 @@ class PesertaController extends Controller
 
     private function generateNoPendaftaran(Rekrutmen $rekrutmen): string
     {
-        $tahun  = $rekrutmen->tahun ?? date('Y');
-        $urutan = Pendaftaran::where('rekrutmen_id', $rekrutmen->id)->count() + 1;
-        return 'PSK-' . $tahun . '-' . str_pad($urutan, 4, '0', STR_PAD_LEFT);
-    }
+        $tahun = $rekrutmen->tahun ?? date('Y');
+        $prefix = 'PSK-' . $tahun . '-';
 
-    public function kartuAnggota()
-{
-    $user        = auth()->user();
-    $rekrutmen   = Rekrutmen::where('is_aktif', true)->first();
- 
-    $pendaftaran = Pendaftaran::with(['dokumen'])
-        ->where('user_id', $user->id)
-        ->where('is_lulus_final', true)
-        ->when($rekrutmen, fn($q) => $q->where('rekrutmen_id', $rekrutmen->id))
-        ->first();
- 
-    if (!$pendaftaran) {
-        return back()->with('error', 'Kartu hanya tersedia untuk peserta yang lulus seleksi.');
+        // Cari nomor urut tertinggi yang sudah ada, lalu +1
+        $last = Pendaftaran::where('rekrutmen_id', $rekrutmen->id)
+            ->where('no_pendaftaran', 'like', $prefix . '%')
+            ->orderByRaw('CAST(SUBSTRING(no_pendaftaran, ' . (strlen($prefix) + 1) . ') AS UNSIGNED) DESC')
+            ->value('no_pendaftaran');
+
+        $urutan = $last
+            ? (int) substr($last, strlen($prefix)) + 1
+            : 1;
+
+        // Loop sampai dapat nomor yang benar-benar belum ada (failsafe)
+        do {
+            $no = $prefix . str_pad($urutan, 4, '0', STR_PAD_LEFT);
+            $exists = Pendaftaran::where('no_pendaftaran', $no)->exists();
+            if ($exists) $urutan++;
+        } while ($exists);
+
+        return $no;
     }
- 
-    return view('peserta.kartu-anggota', compact('pendaftaran', 'rekrutmen'));
-}
- 
-// ── Rekap Absensi Peserta ─────────────────────────────────────
-public function absensiIndex()
-{
-    $user        = auth()->user();
-    $rekrutmen   = Rekrutmen::where('is_aktif', true)->first();
-    $pendaftaran = null;
-    $rekapAbsensi = collect();
- 
-    if ($rekrutmen) {
-        $pendaftaran = Pendaftaran::where('user_id', $user->id)
-            ->where('rekrutmen_id', $rekrutmen->id)
-            ->where('is_lulus_final', true)
-            ->first();
- 
-        if ($pendaftaran) {
-            $rekapAbsensi = \App\Models\Absensi::with('jadwal')
-                ->where('pendaftaran_id', $pendaftaran->id)
-                ->orderByDesc('created_at')
-                ->get();
-        }
-    }
- 
-    $totalHadir = $rekapAbsensi->where('status', 'hadir')->count();
-    $totalAll   = $rekapAbsensi->count();
-    $persen     = $totalAll > 0 ? round($totalHadir / $totalAll * 100) : 0;
- 
-    return view('peserta.absensi', compact('pendaftaran', 'rekapAbsensi', 'totalHadir', 'totalAll', 'persen'));
-}
 }

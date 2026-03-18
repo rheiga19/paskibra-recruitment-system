@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Kartu Peserta Paskibra</title>
+<link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -19,7 +20,6 @@ body {
     background: #fff;
 }
 
-/* ── LAYOUT UTAMA ── */
 .card-wrap {
     width: 297mm;
     height: 210mm;
@@ -28,7 +28,7 @@ body {
     background: #fff;
 }
 
-/* ── SISI KIRI (merah) ── */
+/* ── SISI KIRI ── */
 .left {
     width: 72mm;
     height: 210mm;
@@ -42,24 +42,19 @@ body {
     overflow: hidden;
 }
 
-/* Lingkaran dekoratif di kiri */
 .left::before {
     content: '';
     position: absolute;
-    top: -30mm;
-    left: -20mm;
-    width: 70mm;
-    height: 70mm;
+    top: -30mm; left: -20mm;
+    width: 70mm; height: 70mm;
     border-radius: 50%;
     background: rgba(255,255,255,0.07);
 }
 .left::after {
     content: '';
     position: absolute;
-    bottom: -20mm;
-    right: -25mm;
-    width: 60mm;
-    height: 60mm;
+    bottom: -20mm; right: -25mm;
+    width: 60mm; height: 60mm;
     border-radius: 50%;
     background: rgba(255,255,255,0.07);
 }
@@ -75,6 +70,7 @@ body {
     justify-content: center;
     padding: 3mm;
 }
+
 .logo-wrap img {
     width: 100%;
     height: 100%;
@@ -122,7 +118,7 @@ body {
     margin-top: 2mm;
 }
 
-/* ── SISI KANAN (putih) ── */
+/* ── SISI KANAN ── */
 .right {
     flex: 1;
     height: 210mm;
@@ -133,18 +129,14 @@ body {
     background: #fff;
 }
 
-/* Aksen garis atas */
 .right::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
+    top: 0; left: 0; right: 0;
     height: 2.5mm;
     background: linear-gradient(90deg, #c0392b, #e74c3c, #f39c12);
 }
 
-/* ── HEADER KANAN ── */
 .right-header {
     margin-top: 5mm;
     margin-bottom: 6mm;
@@ -166,17 +158,13 @@ body {
     margin-top: 1mm;
 }
 
-/* ── BODY: DATA + FOTO ── */
 .body-wrap {
     display: flex;
     flex: 1;
     gap: 8mm;
 }
 
-/* Data peserta */
-.data-wrap {
-    flex: 1;
-}
+.data-wrap { flex: 1; }
 
 .no-peserta {
     background: #c0392b;
@@ -220,7 +208,6 @@ body {
     line-height: 1.4;
 }
 
-/* Badge status */
 .badge-status {
     display: inline-block;
     background: #27ae60;
@@ -234,7 +221,6 @@ body {
     margin-top: 4mm;
 }
 
-/* Fisik */
 .fisik-wrap {
     display: flex;
     gap: 4mm;
@@ -261,7 +247,6 @@ body {
     text-transform: uppercase;
 }
 
-/* ── FOTO & QR ── */
 .foto-qr-wrap {
     display: flex;
     flex-direction: column;
@@ -304,10 +289,7 @@ body {
     background: #fff;
 }
 
-.qr-box img {
-    width: 100%;
-    height: 100%;
-}
+.qr-box img { width: 100%; height: 100%; }
 
 .qr-label {
     font-size: 6.5pt;
@@ -317,7 +299,6 @@ body {
     letter-spacing: 0.5px;
 }
 
-/* ── FOOTER ── */
 .footer {
     border-top: 0.5px solid #eee;
     padding-top: 3mm;
@@ -365,45 +346,54 @@ body {
     {{-- ── KIRI ── --}}
     <div class="left">
         <div class="logo-wrap">
-            <img src="{{ public_path('images/logo.png') }}" alt="Logo">
+            {{--
+                FIX LOGO: DomPDF tidak bisa load gambar via URL atau public_path biasa.
+                Harus pakai path absolut file:// atau embed base64.
+                Gunakan base64 agar paling reliable di semua environment.
+            --}}
+            @php
+                $logoPath = public_path('images/logo.png');
+                $logoSrc  = '';
+                if (file_exists($logoPath)) {
+                    $logoData = base64_encode(file_get_contents($logoPath));
+                    $logoMime = mime_content_type($logoPath);
+                    $logoSrc  = 'data:' . $logoMime . ';base64,' . $logoData;
+                }
+            @endphp
+            @if($logoSrc)
+                <img src="{{ $logoSrc }}" alt="Logo">
+            @else
+                {{-- Fallback: teks jika logo tidak ditemukan --}}
+                <div style="color:#fff;font-size:7pt;text-align:center;font-weight:bold;">PASKIBRA</div>
+            @endif
         </div>
         <div class="org-name">PASKIBRA<br>KECAMATAN</div>
         <div class="org-sub">{{ config('app.nama_kecamatan', 'Compreng') }}<br>Kabupaten Subang</div>
         <div class="divider-left"></div>
         <div class="kartu-label">Kartu<br>Peserta</div>
-        <div class="tahun">{{ $rekrutmen->tahun ?? date('Y') }}</div>
+        <div class="tahun">{{ $pendaftaran->rekrutmen->tahun ?? date('Y') }}</div>
     </div>
 
     {{-- ── KANAN ── --}}
     <div class="right">
 
-        {{-- Header --}}
         <div class="right-header">
             <div class="kartu-title">Kartu Peserta Rekrutmen</div>
             <div class="kartu-subtitle">
                 Paskibra Kecamatan {{ config('app.nama_kecamatan', 'Compreng') }} &mdash;
-                Seleksi Tahun {{ $rekrutmen->tahun ?? date('Y') }}
+                Seleksi Tahun {{ $pendaftaran->rekrutmen->tahun ?? date('Y') }}
             </div>
         </div>
 
-        {{-- Body --}}
         <div class="body-wrap">
 
-            {{-- Data --}}
             <div class="data-wrap">
-
                 <div class="no-peserta">{{ $pendaftaran->no_pendaftaran }}</div>
 
                 <div class="data-row">
                     <div class="data-label">Nama Lengkap</div>
                     <div class="data-sep">:</div>
                     <div class="data-value">{{ strtoupper($pendaftaran->nama_lengkap) }}</div>
-                </div>
-
-                <div class="data-row">
-                    <div class="data-label">NIK</div>
-                    <div class="data-sep">:</div>
-                    <div class="data-value">{{ $pendaftaran->nik }}</div>
                 </div>
 
                 <div class="data-row">
@@ -419,7 +409,7 @@ body {
                     <div class="data-label">Jenis Kelamin</div>
                     <div class="data-sep">:</div>
                     <div class="data-value">
-                        {{ $pendaftaran->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' }}
+                        {{ $pendaftaran->jenis_kelamin === 'L' ? 'LAKI-LAKI' : 'PEREMPUAN' }}
                     </div>
                 </div>
 
@@ -432,7 +422,7 @@ body {
                 <div class="data-row">
                     <div class="data-label">Kelas</div>
                     <div class="data-sep">:</div>
-                    <div class="data-value">{{ $pendaftaran->jenjang }} &mdash; Kelas {{ $pendaftaran->kelas }}</div>
+                    <div class="data-value">{{ $pendaftaran->kelas }}</div>
                 </div>
 
                 <div class="data-row">
@@ -443,7 +433,6 @@ body {
                     </div>
                 </div>
 
-                {{-- Fisik --}}
                 <div class="fisik-wrap">
                     <div class="fisik-box">
                         <div class="fisik-val">{{ $pendaftaran->tinggi_badan }} cm</div>
@@ -462,23 +451,30 @@ body {
                 </div>
 
                 <div class="badge-status">&#10003; Peserta Lulus Seleksi</div>
-
             </div>
 
             {{-- Foto & QR --}}
             <div class="foto-qr-wrap">
                 <div class="foto-box">
                     @php
-                        $fotoDok = $pendaftaran->dokumen->firstWhere('jenis', 'foto_4x6');
+                        $fotoDok  = $pendaftaran->dokumen->firstWhere('jenis', 'foto_4x6');
+                        $fotoSrc  = '';
+                        if ($fotoDok) {
+                            $fotoPath = storage_path('app/public/' . $fotoDok->path);
+                            if (file_exists($fotoPath)) {
+                                $fotoData = base64_encode(file_get_contents($fotoPath));
+                                $fotoMime = mime_content_type($fotoPath);
+                                $fotoSrc  = 'data:' . $fotoMime . ';base64,' . $fotoData;
+                            }
+                        }
                     @endphp
-                    @if($fotoDok && file_exists(storage_path('app/public/' . $fotoDok->path)))
-                        <img src="{{ storage_path('app/public/' . $fotoDok->path) }}" alt="Foto">
+                    @if($fotoSrc)
+                        <img src="{{ $fotoSrc }}" alt="Foto">
                     @else
                         <div class="foto-placeholder">Pas Foto<br>4 × 6</div>
                     @endif
                 </div>
 
-                {{-- QR Code --}}
                 @php
                     $qrData = 'PSK-' . $pendaftaran->no_pendaftaran . '|' . $pendaftaran->nama_lengkap;
                     $qrUrl  = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' . urlencode($qrData);
@@ -491,7 +487,6 @@ body {
 
         </div>
 
-        {{-- Footer --}}
         <div class="footer">
             <div class="footer-note">
                 * Kartu ini wajib dibawa saat latihan berlangsung.<br>

@@ -6,27 +6,25 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ isset($title) ? $title . ' — ' : '' }}{{ config('app.name', 'Paskibra Compreng') }}</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
 
-    <!-- General CSS -->
+    {{-- Core CSS --}}
     <link rel="stylesheet" href="{{ asset('assets/modules/bootstrap/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/modules/fontawesome/css/all.min.css') }}">
 
-    <!-- CSS Libraries (per halaman) -->
+    {{-- Per-halaman CSS libs --}}
     @stack('css-libs')
 
-    <!-- Template CSS -->
+    {{-- Template CSS --}}
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/components.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/custom.css') }}">
 
-    <!-- CSS per halaman -->
+    {{-- Per-halaman CSS --}}
     @stack('css')
 
     <style>
-        /* Tombol hamburger mobile — hanya muncul di layar kecil */
-        #mobile-hamburger {
-            display: none;
-        }
+        #mobile-hamburger { display: none; }
 
         @media (max-width: 1024px) {
             #mobile-hamburger {
@@ -34,42 +32,29 @@
                 align-items: center;
                 justify-content: center;
                 position: fixed;
-                top: 12px;
-                left: 12px;
+                top: 12px; left: 12px;
                 z-index: 999;
-                width: 42px;
-                height: 42px;
+                width: 42px; height: 42px;
                 background-color: #6777ef;
                 border-radius: 8px;
                 cursor: pointer;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                box-shadow: 0 2px 8px rgba(0,0,0,.2);
                 border: none;
                 color: #fff;
                 font-size: 18px;
             }
 
-            /* Overlay gelap saat sidebar terbuka */
             #mobile-overlay {
                 display: none;
                 position: fixed;
                 inset: 0;
-                background: rgba(0,0,0,0.5);
+                background: rgba(0,0,0,.5);
                 z-index: 890;
             }
 
-            body.sidebar-show #mobile-overlay {
-                display: block;
-            }
-
-            /* Sidebar muncul saat sidebar-show */
-            body.sidebar-show .main-sidebar {
-                left: 0 !important;
-                z-index: 995 !important;
-            }
-
-            body.sidebar-gone .main-sidebar {
-                left: -250px !important;
-            }
+            body.sidebar-show #mobile-overlay  { display: block; }
+            body.sidebar-show .main-sidebar    { left: 0 !important; z-index: 995 !important; }
+            body.sidebar-gone .main-sidebar    { left: -250px !important; }
         }
     </style>
 </head>
@@ -77,18 +62,16 @@
 <body>
 <div id="app">
 
-    {{-- ── SIDEBAR ── --}}
+    {{-- Sidebar --}}
     @include('partials.sidebar')
 
-    {{-- Overlay mobile --}}
+    {{-- Overlay & Hamburger (mobile) --}}
     <div id="mobile-overlay"></div>
-
-    {{-- Tombol hamburger mobile (fixed, selalu tampil di mobile) --}}
     <button id="mobile-hamburger" onclick="toggleMobileSidebar()">
         <i class="fas fa-bars" id="hamburger-icon"></i>
     </button>
 
-    {{-- ── NAVBAR ── --}}
+    {{-- Navbar --}}
     <div class="navbar-bg"></div>
     <nav class="navbar navbar-expand-lg main-navbar sticky-top">
         <div class="form-inline mr-auto">
@@ -121,11 +104,11 @@
                         <small class="text-muted">{{ ucfirst(auth()->user()->role ?? '') }}</small>
                     </div>
                     @auth
-                    @if(auth()->user()->isPeserta())
-                    <a href="#" class="dropdown-item has-icon">
-                        <i class="far fa-user"></i> Profil Saya
-                    </a>
-                    @endif
+                        @if(auth()->user()->isPeserta())
+                        <a href="{{ route('peserta.profil.edit') }}" class="dropdown-item has-icon">
+                            <i class="far fa-user"></i> Profil Saya
+                        </a>
+                        @endif
                     @endauth
                     <div class="dropdown-divider"></div>
                     <form method="POST" action="{{ route('logout') }}">
@@ -139,7 +122,7 @@
         </ul>
     </nav>
 
-    {{-- ── MAIN CONTENT ── --}}
+    {{-- Main Content --}}
     <div class="main-content">
         <section class="section">
 
@@ -171,13 +154,12 @@
             </div>
             @endif
 
-            {{-- Content --}}
             @yield('content')
 
         </section>
     </div>
 
-    {{-- ── FOOTER ── --}}
+    {{-- Footer --}}
     <footer class="main-footer">
         <div class="footer-left">
             Copyright &copy; {{ date('Y') }} <b>{{ config('app.name') }}</b>
@@ -189,7 +171,7 @@
 
 </div>
 
-<!-- General JS -->
+{{-- Core JS --}}
 <script src="{{ asset('assets/modules/jquery.min.js') }}"></script>
 <script src="{{ asset('assets/modules/popper.js') }}"></script>
 <script src="{{ asset('assets/modules/tooltip.js') }}"></script>
@@ -198,47 +180,38 @@
 <script src="{{ asset('assets/modules/moment.min.js') }}"></script>
 <script src="{{ asset('assets/js/stisla.js') }}"></script>
 
-<!-- JS Libraries (per halaman) -->
+{{-- Per-halaman JS libs (contoh: Chart.js) --}}
 @stack('js-libs')
 
-<!-- Template JS -->
+{{-- Template JS --}}
 <script src="{{ asset('assets/js/scripts.js') }}"></script>
 <script src="{{ asset('assets/js/custom.js') }}"></script>
 
-<!-- Feather Icons -->
+{{-- Feather Icons --}}
 <script src="{{ asset('assets/modules/feather-icons/feather.min.js') }}"></script>
 <script>feather.replace()</script>
 
-<!-- JS per halaman -->
+{{-- Per-halaman JS --}}
 @stack('js')
 
+{{-- Mobile Sidebar --}}
 <script>
 function toggleMobileSidebar() {
-    var body    = document.body;
-    var icon    = document.getElementById('hamburger-icon');
-    var isOpen  = body.classList.contains('sidebar-show');
+    var body   = document.body;
+    var icon   = document.getElementById('hamburger-icon');
+    var isOpen = body.classList.contains('sidebar-show');
 
-    if (isOpen) {
-        // Tutup
-        body.classList.remove('sidebar-show');
-        body.classList.add('sidebar-gone');
-        icon.className = 'fas fa-bars';
-    } else {
-        // Buka
-        body.classList.remove('sidebar-gone');
-        body.classList.add('sidebar-show');
-        icon.className = 'fas fa-times';
-    }
+    body.classList.toggle('sidebar-show', !isOpen);
+    body.classList.toggle('sidebar-gone', isOpen);
+    icon.className = isOpen ? 'fas fa-bars' : 'fas fa-times';
 }
 
-// Tutup sidebar saat klik overlay
 document.getElementById('mobile-overlay').addEventListener('click', function () {
     document.body.classList.remove('sidebar-show');
     document.body.classList.add('sidebar-gone');
     document.getElementById('hamburger-icon').className = 'fas fa-bars';
 });
 
-// Tutup sidebar saat klik link menu
 document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.main-sidebar .nav-link:not([data-toggle])').forEach(function (a) {
         a.addEventListener('click', function () {
@@ -251,5 +224,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+
 </body>
 </html>

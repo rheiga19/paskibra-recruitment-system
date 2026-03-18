@@ -28,14 +28,13 @@ $jenisList = [
     'surat_izin_ortu' => 'Surat Izin Orang Tua',
 ];
 
-// Filter dokumen yang jenis-nya null untuk mencegah error keyBy
 $dokumenMap = $pendaftaran->dokumen
     ->filter(fn($d) => !is_null($d->jenis))
     ->keyBy('jenis');
 @endphp
 
 <div class="row">
-    {{-- ── KIRI: Info Peserta + Dokumen ── --}}
+    {{-- ── KIRI ── --}}
     <div class="col-lg-4">
 
         {{-- Profil --}}
@@ -49,6 +48,14 @@ $dokumenMap = $pendaftaran->dokumen
                 <div class="mt-2">
                     @php $c = ['menunggu'=>'warning','diverifikasi'=>'info','lulus'=>'success','tidak_lulus'=>'danger'][$pendaftaran->status] ?? 'secondary'; @endphp
                     <span class="badge badge-{{ $c }} badge-pill px-3 py-2">{{ $pendaftaran->status_label }}</span>
+                </div>
+                {{-- Tombol Download ZIP --}}
+                <div class="mt-3">
+                    <a href="{{ route('admin.pendaftaran.dokumen-zip', $pendaftaran) }}"
+                       class="btn btn-outline-success btn-sm"
+                       style="border-radius:8px;">
+                        <i class="fas fa-file-archive mr-1"></i> Download Semua Dokumen (ZIP)
+                    </a>
                 </div>
             </div>
             <div class="card-body border-top p-0">
@@ -91,8 +98,11 @@ $dokumenMap = $pendaftaran->dokumen
                         </div>
                         @if($dok)
                             @php $ext = strtolower(pathinfo($dok->path, PATHINFO_EXTENSION)); @endphp
-                            <a href="{{ asset('storage/'.$dok->path) }}" target="_blank"
-                               class="btn btn-sm btn-outline-primary" style="font-size:11px;">
+                            {{-- Akses lewat controller, bukan storage langsung --}}
+                            <a href="{{ route('admin.dokumen.lihat', $dok) }}"
+                               target="_blank"
+                               class="btn btn-sm btn-outline-primary"
+                               style="font-size:11px;">
                                 <i class="fas fa-{{ in_array($ext, ['jpg','jpeg','png','webp']) ? 'image' : 'file-pdf' }} mr-1"></i>
                                 Lihat
                             </a>
@@ -103,11 +113,11 @@ $dokumenMap = $pendaftaran->dokumen
                     @endforeach
                 </ul>
 
-                {{-- Preview foto 4x6 --}}
+                {{-- Preview foto 4x6 lewat controller --}}
                 @if($dokumenMap->has('foto_4x6'))
                 @php $foto = $dokumenMap->get('foto_4x6'); @endphp
                 <div class="p-3 text-center border-top">
-                    <img src="{{ asset('storage/'.$foto->path) }}"
+                    <img src="{{ route('admin.dokumen.lihat', $foto) }}"
                          alt="Foto Peserta"
                          class="img-thumbnail"
                          style="max-height:160px;object-fit:cover;border-radius:8px;">
@@ -118,7 +128,7 @@ $dokumenMap = $pendaftaran->dokumen
 
     </div>
 
-    {{-- ── KANAN: Verifikasi + Hasil Seleksi ── --}}
+    {{-- ── KANAN ── --}}
     <div class="col-lg-8">
 
         {{-- Verifikasi --}}
@@ -180,7 +190,6 @@ $dokumenMap = $pendaftaran->dokumen
                         <tbody>
                             @foreach($pendaftaran->hasilSeleksi as $h)
                             <tr>
-                                {{-- Gunakan optional() untuk mencegah error jika relasi tahap null --}}
                                 <td>{{ optional($h->tahap)->nama ?? '-' }}</td>
                                 <td>{{ $h->nilai_pancasila ?? '-' }}</td>
                                 <td>{{ $h->nilai_tiu ?? '-' }}</td>

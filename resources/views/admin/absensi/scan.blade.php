@@ -11,13 +11,19 @@
 </div>
 
 {{-- Info jadwal --}}
-<div class="alert alert-primary d-flex align-items-center mb-4">
-    <i class="fas fa-calendar-day fa-2x mr-3"></i>
-    <div>
-        <strong>{{ $jadwal->nama }}</strong> &nbsp;·&nbsp;
-        {{ $jadwal->tanggal->translatedFormat('l, d F Y') }} &nbsp;·&nbsp;
-        {{ $jadwal->jam_masuk }} – {{ $jadwal->jam_pulang }}
-        @if($jadwal->lokasi) &nbsp;·&nbsp; 📍 {{ $jadwal->lokasi }} @endif
+<div class="card card-primary mb-4">
+    <div class="card-body py-3">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-calendar-day fa-2x text-primary mr-3"></i>
+            <div>
+                <b>{{ $jadwal->nama }}</b>
+                <div class="text-muted">
+                    {{ $jadwal->tanggal->translatedFormat('l, d F Y') }}
+                    &nbsp;·&nbsp; {{ $jadwal->jam_masuk }} – {{ $jadwal->jam_pulang }}
+                    @if($jadwal->lokasi) &nbsp;·&nbsp; <i class="fas fa-map-marker-alt mr-1"></i>{{ $jadwal->lokasi }} @endif
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -27,62 +33,59 @@
     <div class="col-lg-5">
 
         {{-- Toggle masuk/pulang --}}
-        <div class="card mb-3">
-            <div class="card-body py-3">
-                <div class="d-flex">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-toggle-on mr-2"></i>Mode Absen</h4>
+            </div>
+            <div class="card-body">
+                <div class="btn-group btn-group-lg w-100">
                     <button id="btnMasuk" onclick="setTipe('masuk')"
-                            class="btn btn-success btn-lg flex-fill font-weight-bold mr-2">
-                        📥 ABSEN MASUK
+                            class="btn btn-success font-weight-bold">
+                        <i class="fas fa-sign-in-alt mr-1"></i> MASUK
                     </button>
                     <button id="btnPulang" onclick="setTipe('pulang')"
-                            class="btn btn-outline-danger btn-lg flex-fill font-weight-bold">
-                        📤 ABSEN PULANG
+                            class="btn btn-outline-danger font-weight-bold">
+                        <i class="fas fa-sign-out-alt mr-1"></i> PULANG
                     </button>
                 </div>
-                <div id="tipeLabel" class="text-center mt-2 font-weight-bold text-success" style="font-size:14px;">
+                <div id="tipeLabel" class="text-center mt-2 font-weight-bold text-success">
                     Mode: MASUK
                 </div>
             </div>
         </div>
 
         {{-- Kamera scan QR --}}
-        <div class="card mb-3">
-            <div class="card-header"><h5 class="mb-0"><i class="fas fa-camera mr-2"></i>Scan via Kamera</h5></div>
-            <div class="card-body text-center">
-                <div id="reader" style="width:100%;max-width:320px;margin:0 auto;border-radius:12px;overflow:hidden;"></div>
-                <div class="mt-2">
-                    <button id="btnStartScan" onclick="startScan()" class="btn btn-primary btn-sm">
-                        <i class="fas fa-play mr-1"></i> Mulai Kamera
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-camera mr-2"></i>Scan via Kamera</h4>
+                <div class="card-header-action">
+                    <button id="btnStartScan" onclick="startScan()" class="btn btn-sm btn-primary">
+                        <i class="fas fa-play mr-1"></i> Mulai
                     </button>
-                    <button id="btnStopScan" onclick="stopScan()" class="btn btn-secondary btn-sm d-none">
+                    <button id="btnStopScan" onclick="stopScan()" class="btn btn-sm btn-secondary d-none">
                         <i class="fas fa-stop mr-1"></i> Stop
                     </button>
                 </div>
+            </div>
+            <div class="card-body text-center">
+                <div id="reader" style="width:100%;max-width:320px;margin:0 auto;border-radius:8px;overflow:hidden;"></div>
             </div>
         </div>
 
         {{-- Input Manual --}}
         <div class="card">
-            <div class="card-header"><h5 class="mb-0"><i class="fas fa-keyboard mr-2"></i>Input Manual</h5></div>
+            <div class="card-header">
+                <h4><i class="fas fa-keyboard mr-2"></i>Input Manual</h4>
+            </div>
             <div class="card-body">
-                @if(session('success'))
-                <div class="alert alert-success py-2">{{ session('success') }}</div>
-                @endif
-                @if(session('error'))
-                <div class="alert alert-danger py-2">{{ session('error') }}</div>
-                @endif
-                @if(session('info'))
-                <div class="alert alert-info py-2">{{ session('info') }}</div>
-                @endif
-
                 <form action="{{ route('admin.absensi.manual', $jadwal) }}" method="POST">
                     @csrf
                     <div class="input-group mb-2">
-                        <input type="text" name="no_pendaftaran" class="form-control form-control-lg"
+                        <input type="text" name="no_pendaftaran" class="form-control"
                                placeholder="No. Pendaftaran / scan kartu..."
                                autocomplete="off" autofocus id="inputManual">
                         <div class="input-group-append">
-                            <select name="tipe" class="form-control form-control-lg">
+                            <select name="tipe" class="form-control">
                                 <option value="masuk">Masuk</option>
                                 <option value="pulang">Pulang</option>
                             </select>
@@ -97,6 +100,7 @@
                 </small>
             </div>
         </div>
+
     </div>
 
     {{-- ── Log + Daftar Peserta ── --}}
@@ -106,10 +110,14 @@
         <div id="scanResult" class="d-none mb-3"></div>
 
         {{-- Log scan realtime --}}
-        <div class="card mb-3">
-            <div class="card-header d-flex justify-content-between">
-                <h5 class="mb-0"><i class="fas fa-history mr-2"></i>Log Scan Hari Ini</h5>
-                <button onclick="clearLog()" class="btn btn-xs btn-outline-secondary">Bersihkan</button>
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-history mr-2"></i>Log Scan Hari Ini</h4>
+                <div class="card-header-action">
+                    <button onclick="clearLog()" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-trash mr-1"></i> Bersihkan
+                    </button>
+                </div>
             </div>
             <div id="scanLog" style="max-height:200px;overflow-y:auto;padding:12px;">
                 <div class="text-muted text-center py-3" id="logEmpty">Belum ada scan.</div>
@@ -118,173 +126,153 @@
 
         {{-- Daftar peserta + status --}}
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="fas fa-users mr-2"></i>Daftar Peserta</h5>
-                <div>
-                    <span class="badge badge-success mr-1">
-                        {{ $absensiList->where('status','hadir')->count() }} Hadir
-                    </span>
-                    <span class="badge badge-warning mr-1">
-                        {{ $absensiList->where('status','izin')->count() }} Izin
-                    </span>
-                    <span class="badge badge-info mr-1">
-                        {{ $absensiList->where('status','sakit')->count() }} Sakit
-                    </span>
-                    <span class="badge badge-danger">
-                        {{ $absensiList->where('status','alpha')->count() }} Alpha
-                    </span>
+            <div class="card-header">
+                <h4><i class="fas fa-users mr-2"></i>Daftar Peserta</h4>
+                <div class="card-header-action">
+                    <div class="badge badge-success mr-1">{{ $absensiList->where('status','hadir')->count() }} Hadir</div>
+                    <div class="badge badge-warning mr-1">{{ $absensiList->where('status','izin')->count() }} Izin</div>
+                    <div class="badge badge-info mr-1">{{ $absensiList->where('status','sakit')->count() }} Sakit</div>
+                    <div class="badge badge-danger">{{ $absensiList->where('status','alpha')->count() }} Alpha</div>
                 </div>
             </div>
-            <div class="table-responsive" style="max-height:400px;overflow-y:auto;">
-                <table class="table table-sm mb-0">
-                    <thead class="thead-light sticky-top">
-                        <tr>
-                            <th>Nama</th>
-                            <th>No. Kartu</th>
-                            <th class="text-center">Status</th>
-                            <th class="text-center">Masuk</th>
-                            <th class="text-center">Pulang</th>
-                            <th class="text-center">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbodyPeserta">
-                        @foreach($absensiList as $abs)
-                        <tr id="row-{{ $abs->pendaftaran->no_pendaftaran }}">
-                            <td>
-                                <div class="font-weight-bold" style="font-size:13px;">
-                                    {{ $abs->pendaftaran->nama_lengkap }}
-                                </div>
-                                <small class="text-muted">
-                                    {{ $abs->pendaftaran->jenis_kelamin === 'L' ? '♂' : '♀' }}
-                                </small>
-                            </td>
-                            <td><code style="font-size:12px;">{{ $abs->pendaftaran->no_pendaftaran }}</code></td>
-                            <td class="text-center">
-                                <span class="badge badge-{{ $abs->badgeStatus() }}"
-                                      id="badge-{{ $abs->pendaftaran->no_pendaftaran }}">
-                                    {{ $abs->labelStatus() }}
-                                </span>
-                                {{-- Tampilkan label telat jika izin dengan waktu masuk --}}
-                                @if($abs->status === 'izin' && $abs->waktu_masuk)
-                                <br><small class="text-warning" style="font-size:10px;">telat</small>
-                                @endif
-                            </td>
-                            <td class="text-center" id="masuk-{{ $abs->pendaftaran->no_pendaftaran }}"
-                                style="font-size:13px;">
-                                {{ $abs->waktu_masuk ? $abs->waktu_masuk->format('H:i') : '-' }}
-                            </td>
-                            <td class="text-center" id="pulang-{{ $abs->pendaftaran->no_pendaftaran }}"
-                                style="font-size:13px;">
-                                {{ $abs->waktu_pulang ? $abs->waktu_pulang->format('H:i') : '-' }}
-                            </td>
-                            <td class="text-center">
-                                <button class="btn btn-xs btn-outline-secondary"
-                                        data-toggle="modal"
-                                        data-target="#modal{{ $abs->id }}">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                            </td>
-                        </tr>
-
-                        {{-- Modal edit status --}}
-                        <div class="modal fade" id="modal{{ $abs->id }}" tabindex="-1">
-                            <div class="modal-dialog modal-sm">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h6 class="modal-title">
-                                            <i class="fas fa-edit mr-1"></i>
-                                            {{ $abs->pendaftaran->nama_lengkap }}
-                                        </h6>
-                                        <button type="button" class="close" data-dismiss="modal">
-                                            <span>&times;</span>
-                                        </button>
+            <div class="card-body p-0">
+                <div class="table-responsive" style="max-height:400px;overflow-y:auto;">
+                    <table class="table table-striped table-md mb-0">
+                        <thead>
+                            <tr>
+                                <th>Nama</th>
+                                <th>No. Kartu</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-center">Masuk</th>
+                                <th class="text-center">Pulang</th>
+                                <th class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyPeserta">
+                            @foreach($absensiList as $abs)
+                            <tr id="row-{{ $abs->pendaftaran->no_pendaftaran }}">
+                                <td>
+                                    <b>{{ $abs->pendaftaran->nama_lengkap }}</b>
+                                    <br><small class="text-muted">
+                                        {{ $abs->pendaftaran->jenis_kelamin === 'L' ? '♂ Putra' : '♀ Putri' }}
+                                    </small>
+                                </td>
+                                <td><code>{{ $abs->pendaftaran->no_pendaftaran }}</code></td>
+                                <td class="text-center">
+                                    <div class="badge badge-{{ $abs->badgeStatus() }}"
+                                         id="badge-{{ $abs->pendaftaran->no_pendaftaran }}">
+                                        {{ $abs->labelStatus() }}
                                     </div>
-                                    <form action="{{ route('admin.absensi.update-status', $abs) }}" method="POST">
-                                        @csrf @method('PATCH')
-                                        <div class="modal-body">
+                                    @if($abs->status === 'izin' && $abs->waktu_masuk)
+                                    <div class="text-warning" style="font-size:10px;">telat</div>
+                                    @endif
+                                </td>
+                                <td class="text-center" id="masuk-{{ $abs->pendaftaran->no_pendaftaran }}">
+                                    {{ $abs->waktu_masuk ? $abs->waktu_masuk->format('H:i') : '-' }}
+                                </td>
+                                <td class="text-center" id="pulang-{{ $abs->pendaftaran->no_pendaftaran }}">
+                                    {{ $abs->waktu_pulang ? $abs->waktu_pulang->format('H:i') : '-' }}
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-icon btn-outline-secondary"
+                                            data-toggle="modal"
+                                            data-target="#modal{{ $abs->id }}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
 
-                                            {{-- Info waktu tercatat --}}
-                                            @if($abs->waktu_masuk || $abs->waktu_pulang)
-                                            <div class="alert alert-light py-2 mb-3" style="font-size:12px;">
-                                                @if($abs->waktu_masuk)
-                                                <div>🕐 Masuk: <strong>{{ $abs->waktu_masuk->format('H:i') }}</strong></div>
-                                                @endif
-                                                @if($abs->waktu_pulang)
-                                                <div>🕐 Pulang: <strong>{{ $abs->waktu_pulang->format('H:i') }}</strong></div>
-                                                @endif
-                                            </div>
-                                            @endif
-
-                                            <div class="form-group">
-                                                <label class="font-weight-bold">Status</label>
-                                                <select name="status" class="form-control" id="statusSelect{{ $abs->id }}"
-                                                        onchange="cekStatusModal({{ $abs->id }})">
-                                                    <option value="hadir" {{ $abs->status=='hadir' ? 'selected':'' }}>
-                                                        ✅ Hadir
-                                                    </option>
-                                                    <option value="izin"  {{ $abs->status=='izin'  ? 'selected':'' }}>
-                                                        🕐 Izin (bisa telat atau tidak hadir)
-                                                    </option>
-                                                    <option value="sakit" {{ $abs->status=='sakit' ? 'selected':'' }}>
-                                                        🤒 Sakit
-                                                    </option>
-                                                    <option value="alpha" {{ $abs->status=='alpha' ? 'selected':'' }}>
-                                                        ❌ Alpha
-                                                    </option>
-                                                </select>
-                                            </div>
-
-                                            {{-- Peringatan sakit/alpha hapus waktu --}}
-                                            <div id="warnModal{{ $abs->id }}"
-                                                 class="alert alert-warning py-2 mb-2 d-none"
-                                                 style="font-size:12px;">
-                                                ⚠️ Status <strong>Sakit</strong> dan <strong>Alpha</strong>
-                                                akan menghapus waktu masuk &amp; pulang yang sudah tercatat.
-                                            </div>
-
-                                            <div class="form-group mb-0">
-                                                <label class="font-weight-bold">Keterangan</label>
-                                                <textarea name="keterangan" class="form-control" rows="2"
-                                                          placeholder="Opsional...">{{ $abs->keterangan }}</textarea>
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary btn-sm"
-                                                    data-dismiss="modal">Batal</button>
-                                            <button class="btn btn-primary btn-sm">
-                                                <i class="fas fa-save mr-1"></i> Simpan
+                            {{-- Modal edit status --}}
+                            <div class="modal fade" id="modal{{ $abs->id }}" tabindex="-1">
+                                <div class="modal-dialog modal-sm">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">
+                                                <i class="fas fa-edit mr-1"></i> {{ $abs->pendaftaran->nama_lengkap }}
+                                            </h5>
+                                            <button type="button" class="close" data-dismiss="modal">
+                                                <span>&times;</span>
                                             </button>
                                         </div>
-                                    </form>
+                                        <form action="{{ route('admin.absensi.update-status', $abs) }}" method="POST">
+                                            @csrf @method('PATCH')
+                                            <div class="modal-body">
+
+                                                @if($abs->waktu_masuk || $abs->waktu_pulang)
+                                                <div class="alert alert-light py-2 mb-3">
+                                                    @if($abs->waktu_masuk)
+                                                    <div><i class="fas fa-sign-in-alt mr-1"></i> Masuk: <strong>{{ $abs->waktu_masuk->format('H:i') }}</strong></div>
+                                                    @endif
+                                                    @if($abs->waktu_pulang)
+                                                    <div><i class="fas fa-sign-out-alt mr-1"></i> Pulang: <strong>{{ $abs->waktu_pulang->format('H:i') }}</strong></div>
+                                                    @endif
+                                                </div>
+                                                @endif
+
+                                                <div class="form-group">
+                                                    <label class="font-weight-bold">Status</label>
+                                                    <select name="status" class="form-control"
+                                                            id="statusSelect{{ $abs->id }}"
+                                                            onchange="cekStatusModal({{ $abs->id }})">
+                                                        <option value="hadir" {{ $abs->status=='hadir' ? 'selected':'' }}>✅ Hadir</option>
+                                                        <option value="izin"  {{ $abs->status=='izin'  ? 'selected':'' }}>🕐 Izin</option>
+                                                        <option value="sakit" {{ $abs->status=='sakit' ? 'selected':'' }}>🤒 Sakit</option>
+                                                        <option value="alpha" {{ $abs->status=='alpha' ? 'selected':'' }}>❌ Alpha</option>
+                                                    </select>
+                                                </div>
+
+                                                <div id="warnModal{{ $abs->id }}" class="alert alert-warning py-2 mb-2 d-none">
+                                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                                    Status <strong>Sakit</strong> dan <strong>Alpha</strong>
+                                                    akan menghapus waktu masuk &amp; pulang.
+                                                </div>
+
+                                                <div class="form-group mb-0">
+                                                    <label class="font-weight-bold">Keterangan</label>
+                                                    <textarea name="keterangan" class="form-control" rows="2"
+                                                              placeholder="Opsional...">{{ $abs->keterangan }}</textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary btn-sm"
+                                                        data-dismiss="modal">Batal</button>
+                                                <button class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-save mr-1"></i> Simpan
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        @endforeach
-                    </tbody>
-                </table>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
-
-            {{-- Keterangan badge --}}
-            <div class="card-footer py-2" style="font-size:12px;">
-                <span class="badge badge-success mr-1">H</span> Hadir &nbsp;
-                <span class="badge badge-warning mr-1">I</span> Izin &nbsp;
-                <span class="badge badge-info mr-1">S</span> Sakit &nbsp;
-                <span class="badge badge-danger mr-1">A</span> Alpha
-                &nbsp;·&nbsp; Izin + <small class="text-warning">telat</small> = masuk tapi lewat jam
+            <div class="card-footer">
+                <small>
+                    <div class="badge badge-success mr-1">H</div> Hadir &nbsp;
+                    <div class="badge badge-warning mr-1">I</div> Izin &nbsp;
+                    <div class="badge badge-info mr-1">S</div> Sakit &nbsp;
+                    <div class="badge badge-danger mr-1">A</div> Alpha
+                    &nbsp;·&nbsp; Izin + <span class="text-warning">telat</span> = masuk tapi lewat jam
+                </small>
             </div>
         </div>
     </div>
 </div>
 
-{{-- Library QR Scanner --}}
+@push('js-libs')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+@endpush
+
+@push('js')
 <script>
 let html5QrCode = null;
 let tipe        = 'masuk';
 const jadwalId  = {{ $jadwal->id }};
 const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
-// ── Badge color map ──────────────────────────────────────────────────
 const badgeMap = {
     hadir : { cls: 'badge-success', label: 'Hadir' },
     izin  : { cls: 'badge-warning', label: 'Izin'  },
@@ -292,23 +280,20 @@ const badgeMap = {
     alpha : { cls: 'badge-danger',  label: 'Alpha'  },
 };
 
-// ── Toggle mode masuk/pulang ─────────────────────────────────────────
 function setTipe(t) {
     tipe = t;
-    document.getElementById('btnMasuk').className = t === 'masuk'
-        ? 'btn btn-success btn-lg flex-fill font-weight-bold mr-2'
-        : 'btn btn-outline-success btn-lg flex-fill font-weight-bold mr-2';
+    document.getElementById('btnMasuk').className  = t === 'masuk'
+        ? 'btn btn-success font-weight-bold'
+        : 'btn btn-outline-success font-weight-bold';
     document.getElementById('btnPulang').className = t === 'pulang'
-        ? 'btn btn-danger btn-lg flex-fill font-weight-bold'
-        : 'btn btn-outline-danger btn-lg flex-fill font-weight-bold';
-    document.getElementById('tipeLabel').textContent = 'Mode: ' + t.toUpperCase();
-    document.getElementById('tipeLabel').className   = t === 'masuk'
-        ? 'text-center mt-2 font-weight-bold text-success'
-        : 'text-center mt-2 font-weight-bold text-danger';
+        ? 'btn btn-danger font-weight-bold'
+        : 'btn btn-outline-danger font-weight-bold';
+    const label = document.getElementById('tipeLabel');
+    label.textContent = 'Mode: ' + t.toUpperCase();
+    label.className   = 'text-center mt-2 font-weight-bold text-' + (t === 'masuk' ? 'success' : 'danger');
     document.querySelector('select[name="tipe"]').value = t;
 }
 
-// ── Kamera ───────────────────────────────────────────────────────────
 function startScan() {
     html5QrCode = new Html5Qrcode("reader");
     html5QrCode.start(
@@ -332,7 +317,6 @@ function stopScan() {
     }
 }
 
-// ── Anti-duplikat debounce ───────────────────────────────────────────
 let lastScanned = '';
 let lastTime    = 0;
 
@@ -344,10 +328,7 @@ function prosesQr(qrCode) {
 
     fetch(`/admin/absensi/${jadwalId}/qr`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': csrfToken,
-        },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
         body: JSON.stringify({ qr_code: qrCode, tipe: tipe }),
     })
     .then(r => r.json())
@@ -358,7 +339,6 @@ function prosesQr(qrCode) {
     .catch(() => tampilHasil({ success: false, message: 'Koneksi gagal.' }));
 }
 
-// ── Tampil notifikasi + log ──────────────────────────────────────────
 function tampilHasil(data) {
     const el = document.getElementById('scanResult');
     el.className = data.success
@@ -367,8 +347,7 @@ function tampilHasil(data) {
     el.innerHTML = `<strong>${data.message}</strong>`;
     el.classList.remove('d-none');
 
-    // Tambah ke log
-    const log = document.getElementById('scanLog');
+    const log  = document.getElementById('scanLog');
     document.getElementById('logEmpty')?.remove();
     const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
     const item = document.createElement('div');
@@ -379,28 +358,24 @@ function tampilHasil(data) {
         <span class="text-muted">${data.tipe ? data.tipe.toUpperCase() : ''} ${time}</span>
     `;
     log.insertBefore(item, log.firstChild);
-
     setTimeout(() => el.classList.add('d-none'), 4000);
 }
 
-// ── Update baris tabel realtime ──────────────────────────────────────
 function updateRow(data) {
     const row = document.getElementById(`row-${data.no_daftar}`);
     if (!row) return;
 
-    // Update badge status
     const badge = document.getElementById(`badge-${data.no_daftar}`);
     if (badge && data.status) {
         const info    = badgeMap[data.status] || badgeMap['hadir'];
         badge.className   = 'badge ' + info.cls;
         badge.textContent = info.label;
 
-        // Tambah label telat jika izin
         const telatEl = badge.nextElementSibling;
         if (data.status === 'izin') {
             if (!telatEl || !telatEl.classList.contains('text-warning')) {
-                const span = document.createElement('span');
-                span.className   = 'text-warning d-block';
+                const span       = document.createElement('div');
+                span.className   = 'text-warning';
                 span.style.fontSize = '10px';
                 span.textContent = 'telat';
                 badge.after(span);
@@ -408,12 +383,9 @@ function updateRow(data) {
         }
     }
 
-    // Update waktu masuk
     if (data.tipe === 'masuk') {
         const m = document.getElementById(`masuk-${data.no_daftar}`);
         if (m) m.textContent = data.waktu;
-
-        // Update waktu pulang jika auto-set
         if (data.waktu_pulang) {
             const p = document.getElementById(`pulang-${data.no_daftar}`);
             if (p) p.textContent = data.waktu_pulang;
@@ -423,18 +395,14 @@ function updateRow(data) {
         if (p) p.textContent = data.waktu;
     }
 
-    // Highlight baris
     row.style.background = '#d4edda';
     setTimeout(() => row.style.background = '', 2000);
 }
 
-// ── Peringatan di modal edit jika pilih sakit/alpha ──────────────────
 function cekStatusModal(id) {
     const val  = document.getElementById('statusSelect' + id).value;
     const warn = document.getElementById('warnModal' + id);
-    if (warn) {
-        warn.classList.toggle('d-none', !['sakit', 'alpha'].includes(val));
-    }
+    if (warn) warn.classList.toggle('d-none', !['sakit', 'alpha'].includes(val));
 }
 
 function clearLog() {
@@ -442,4 +410,6 @@ function clearLog() {
         '<div class="text-muted text-center py-3" id="logEmpty">Belum ada scan.</div>';
 }
 </script>
+@endpush
+
 @endsection

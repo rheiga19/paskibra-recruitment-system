@@ -6,11 +6,10 @@ use App\Http\Controllers\HomeController;
 // ── HOME ────────────────────────────────────────────────────────────
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/pengumuman', [HomeController::class, 'pengumuman'])->name('pengumuman');
-// ── HOME PUBLIK ──
-Route::get('/berita',        [\App\Http\Controllers\HomeController::class, 'beritaIndex'])->name('berita.index');
-Route::get('/berita/{beritum}', [\App\Http\Controllers\HomeController::class, 'beritaShow'])->name('berita.show');
-Route::get('/galeri',        [\App\Http\Controllers\HomeController::class, 'galeriIndex'])->name('galeri.index');
-Route::get('/galeri/{galeri}', [\App\Http\Controllers\HomeController::class, 'galeriShow'])->name('galeri.show');
+Route::get('/berita',           [HomeController::class, 'beritaIndex'])->name('berita.index');
+Route::get('/berita/{beritum}', [HomeController::class, 'beritaShow'])->name('berita.show');
+Route::get('/galeri',           [HomeController::class, 'galeriIndex'])->name('galeri.index');
+Route::get('/galeri/{galeri}',  [HomeController::class, 'galeriShow'])->name('galeri.show');
 
 // ── REDIRECT DASHBOARD ──────────────────────────────────────────────
 Route::get('/dashboard', function () {
@@ -40,6 +39,13 @@ Route::middleware(['auth', 'role:admin'])
         ->name('rekrutmen.toggle');
 
     // ── Pendaftaran ──
+    // PENTING: route statis harus di atas route dinamis {pendaftaran}
+    Route::get('pendaftaran/download-semua-zip',
+        [\App\Http\Controllers\Admin\DokumenDownloadController::class, 'downloadSemua'])
+        ->name('pendaftaran.download-semua-zip');
+    Route::get('pendaftaran/{pendaftaran}/dokumen-zip',
+        [\App\Http\Controllers\Admin\DokumenDownloadController::class, 'downloadSatu'])
+        ->name('pendaftaran.dokumen-zip');
     Route::get   ('pendaftaran',                         [\App\Http\Controllers\Admin\PendaftaranAdminController::class, 'index'])
         ->name('pendaftaran.index');
     Route::get   ('pendaftaran/{pendaftaran}',            [\App\Http\Controllers\Admin\PendaftaranAdminController::class, 'show'])
@@ -49,8 +55,13 @@ Route::middleware(['auth', 'role:admin'])
     Route::delete('pendaftaran/{pendaftaran}',            [\App\Http\Controllers\Admin\PendaftaranAdminController::class, 'destroy'])
         ->name('pendaftaran.destroy');
 
+    // ── Dokumen Peserta — Lihat (private, lewat controller) ──
+    // Admin & panitia bisa akses lewat route ini
+    Route::get('dokumen/{dokumenPeserta}/lihat',
+        [\App\Http\Controllers\Peserta\PesertaController::class, 'dokumenLihatAdmin'])
+        ->name('dokumen.lihat');
+
     // ── Seleksi ──
-    // PENTING: route statis harus di atas route dengan parameter dinamis
     Route::get ('seleksi',                                    [\App\Http\Controllers\Admin\SeleksiController::class, 'index'])
         ->name('seleksi.index');
     Route::get ('seleksi/hasil-akhir',                        [\App\Http\Controllers\Admin\SeleksiController::class, 'hasilAkhir'])
@@ -69,7 +80,6 @@ Route::middleware(['auth', 'role:admin'])
         ->name('seleksi.togglePengumuman');
 
     // ── Berita ──
-    // PENTING: route statis (create) harus di atas route dinamis ({beritum})
     Route::get   ('berita',                   [\App\Http\Controllers\Admin\BeritaController::class, 'index'])        ->name('berita.index');
     Route::get   ('berita/create',            [\App\Http\Controllers\Admin\BeritaController::class, 'create'])       ->name('berita.create');
     Route::post  ('berita',                   [\App\Http\Controllers\Admin\BeritaController::class, 'store'])        ->name('berita.store');
@@ -94,19 +104,19 @@ Route::middleware(['auth', 'role:admin'])
     Route::get('pengaturan',  [\App\Http\Controllers\Admin\PengaturanController::class, 'edit'])  ->name('pengaturan.edit');
     Route::put('pengaturan',  [\App\Http\Controllers\Admin\PengaturanController::class, 'update'])->name('pengaturan.update');
 
-    Route::get   ('absensi',                      [\App\Http\Controllers\Admin\AbsensiController::class, 'index'])       ->name('absensi.index');
-    Route::post  ('absensi',                      [\App\Http\Controllers\Admin\AbsensiController::class, 'store'])       ->name('absensi.store');
-    Route::get   ('absensi/rekap',                [\App\Http\Controllers\Admin\AbsensiController::class, 'rekap'])       ->name('absensi.rekap');
-    Route::get   ('absensi/export-excel',         [\App\Http\Controllers\Admin\AbsensiController::class, 'exportExcel'])->name('absensi.export-excel');
-    Route::get   ('absensi/export-pdf',           [\App\Http\Controllers\Admin\AbsensiController::class, 'exportPdf'])  ->name('absensi.export-pdf');
-    Route::get   ('absensi/{jadwal}/scan',        [\App\Http\Controllers\Admin\AbsensiController::class, 'scan'])        ->name('absensi.scan');
-    Route::post  ('absensi/{jadwal}/qr',          [\App\Http\Controllers\Admin\AbsensiController::class, 'prosesQr'])   ->name('absensi.qr');
-    Route::post  ('absensi/{jadwal}/manual',      [\App\Http\Controllers\Admin\AbsensiController::class, 'inputManual'])->name('absensi.manual');
-    Route::patch ('absensi/record/{absensi}',     [\App\Http\Controllers\Admin\AbsensiController::class, 'updateStatus'])->name('absensi.update-status');
-    Route::delete('absensi/{jadwal}',             [\App\Http\Controllers\Admin\AbsensiController::class, 'destroy'])    ->name('absensi.destroy');
-    Route::post('absensi/bulk', [\App\Http\Controllers\Admin\AbsensiController::class, 'storeBulk'])
-    ->name('absensi.store-bulk');
-    });
+    // ── Absensi ──
+    Route::get   ('absensi',                  [\App\Http\Controllers\Admin\AbsensiController::class, 'index'])       ->name('absensi.index');
+    Route::post  ('absensi',                  [\App\Http\Controllers\Admin\AbsensiController::class, 'store'])       ->name('absensi.store');
+    Route::post  ('absensi/bulk',             [\App\Http\Controllers\Admin\AbsensiController::class, 'storeBulk'])   ->name('absensi.store-bulk');
+    Route::get   ('absensi/rekap',            [\App\Http\Controllers\Admin\AbsensiController::class, 'rekap'])       ->name('absensi.rekap');
+    Route::get   ('absensi/export-excel',     [\App\Http\Controllers\Admin\AbsensiController::class, 'exportExcel'])->name('absensi.export-excel');
+    Route::get   ('absensi/export-pdf',       [\App\Http\Controllers\Admin\AbsensiController::class, 'exportPdf'])  ->name('absensi.export-pdf');
+    Route::get   ('absensi/{jadwal}/scan',    [\App\Http\Controllers\Admin\AbsensiController::class, 'scan'])        ->name('absensi.scan');
+    Route::post  ('absensi/{jadwal}/qr',      [\App\Http\Controllers\Admin\AbsensiController::class, 'prosesQr'])   ->name('absensi.qr');
+    Route::post  ('absensi/{jadwal}/manual',  [\App\Http\Controllers\Admin\AbsensiController::class, 'inputManual'])->name('absensi.manual');
+    Route::patch ('absensi/record/{absensi}', [\App\Http\Controllers\Admin\AbsensiController::class, 'updateStatus'])->name('absensi.update-status');
+    Route::delete('absensi/{jadwal}',         [\App\Http\Controllers\Admin\AbsensiController::class, 'destroy'])    ->name('absensi.destroy');
+});
 
 // ══════════════════════════════════════════════════════════════════════
 // PANITIA
@@ -119,6 +129,11 @@ Route::middleware(['auth', 'role:panitia'])
     // ── Dashboard ──
     Route::get('dashboard', [\App\Http\Controllers\Panitia\PanitiaController::class, 'dashboard'])
         ->name('dashboard');
+
+    // ── Dokumen Peserta — Lihat (panitia juga bisa akses) ──
+    Route::get('dokumen/{dokumenPeserta}/lihat',
+        [\App\Http\Controllers\Peserta\PesertaController::class, 'dokumenLihatAdmin'])
+        ->name('dokumen.lihat');
 
     // ── Verifikasi Administrasi ──
     Route::get  ('verifikasi',               [\App\Http\Controllers\Panitia\PanitiaController::class, 'verifikasiIndex'])
@@ -140,11 +155,12 @@ Route::middleware(['auth', 'role:panitia'])
     Route::get('hasil', [\App\Http\Controllers\Panitia\PanitiaController::class, 'hasilIndex'])
         ->name('hasil.index');
 
-    Route::get   ('absensi',                      [\App\Http\Controllers\Admin\AbsensiController::class, 'index'])       ->name('absensi.index');
-    Route::get   ('absensi/{jadwal}/scan',        [\App\Http\Controllers\Admin\AbsensiController::class, 'scan'])        ->name('absensi.scan');
-    Route::post  ('absensi/{jadwal}/qr',          [\App\Http\Controllers\Admin\AbsensiController::class, 'prosesQr'])   ->name('absensi.qr');
-    Route::post  ('absensi/{jadwal}/manual',      [\App\Http\Controllers\Admin\AbsensiController::class, 'inputManual'])->name('absensi.manual');
-    Route::patch ('absensi/record/{absensi}',     [\App\Http\Controllers\Admin\AbsensiController::class, 'updateStatus'])->name('absensi.update-status');
+    // ── Absensi ──
+    Route::get  ('absensi',                  [\App\Http\Controllers\Admin\AbsensiController::class, 'index'])       ->name('absensi.index');
+    Route::get  ('absensi/{jadwal}/scan',    [\App\Http\Controllers\Admin\AbsensiController::class, 'scan'])        ->name('absensi.scan');
+    Route::post ('absensi/{jadwal}/qr',      [\App\Http\Controllers\Admin\AbsensiController::class, 'prosesQr'])   ->name('absensi.qr');
+    Route::post ('absensi/{jadwal}/manual',  [\App\Http\Controllers\Admin\AbsensiController::class, 'inputManual'])->name('absensi.manual');
+    Route::patch('absensi/record/{absensi}', [\App\Http\Controllers\Admin\AbsensiController::class, 'updateStatus'])->name('absensi.update-status');
 });
 
 // ══════════════════════════════════════════════════════════════════════
@@ -154,26 +170,29 @@ Route::middleware(['auth', 'role:peserta'])
     ->prefix('peserta')
     ->name('peserta.')
     ->group(function () {
- 
+
     // ── Dashboard ──
     Route::get('dashboard', [\App\Http\Controllers\Peserta\PesertaController::class, 'dashboard'])
         ->name('dashboard');
- 
+
     // ── Profil / Biodata ──
     Route::get('profil/edit', [\App\Http\Controllers\Peserta\PesertaController::class, 'profilEdit'])
         ->name('profil.edit');
     Route::put('profil',      [\App\Http\Controllers\Peserta\PesertaController::class, 'profilUpdate'])
         ->name('profil.update');
- 
+
     // ── Dokumen ──
-    Route::get   ('dokumen',         [\App\Http\Controllers\Peserta\PesertaController::class, 'dokumenIndex'])
+    Route::get   ('dokumen',                [\App\Http\Controllers\Peserta\PesertaController::class, 'dokumenIndex'])
         ->name('dokumen.index');
-    Route::post  ('dokumen/upload',  [\App\Http\Controllers\Peserta\PesertaController::class, 'dokumenUpload'])
+    Route::post  ('dokumen/upload',         [\App\Http\Controllers\Peserta\PesertaController::class, 'dokumenUpload'])
         ->name('dokumen.upload');
-    Route::delete('dokumen/{jenis}', [\App\Http\Controllers\Peserta\PesertaController::class, 'dokumenHapus'])
+    Route::get   ('dokumen/{jenis}/lihat',  [\App\Http\Controllers\Peserta\PesertaController::class, 'dokumenLihat'])
+        ->name('dokumen.lihat');
+    Route::delete('dokumen/{jenis}',        [\App\Http\Controllers\Peserta\PesertaController::class, 'dokumenHapus'])
         ->name('dokumen.hapus');
- 
+
     // ── Pendaftaran ──
+    // PENTING: route statis di atas route dinamis {pendaftaran}
     Route::post('pendaftaran/{rekrutmen}/apply',  [\App\Http\Controllers\Peserta\PesertaController::class, 'pendaftaranApply'])
         ->name('pendaftaran.apply');
     Route::get ('pendaftaran',                    [\App\Http\Controllers\Peserta\PesertaController::class, 'pendaftaranIndex'])
@@ -182,17 +201,16 @@ Route::middleware(['auth', 'role:peserta'])
         ->name('pendaftaran.show');
     Route::get ('pendaftaran/{pendaftaran}/kartu', [\App\Http\Controllers\Peserta\PesertaController::class, 'pendaftaranKartu'])
         ->name('pendaftaran.kartu');
- 
+
     // ── Hasil Seleksi ──
     Route::get('hasil-seleksi', [\App\Http\Controllers\Peserta\PesertaController::class, 'hasilSeleksi'])
         ->name('hasil.index');
- 
+
     // ── Absensi ──
     Route::get('absensi', [\App\Http\Controllers\Peserta\PesertaController::class, 'absensiIndex'])
-        ->name('absensi'); 
- 
+        ->name('absensi');
+
     // ── Kartu Anggota ──
     Route::get('kartu', [\App\Http\Controllers\Peserta\PesertaController::class, 'kartuAnggota'])
-        ->name('kartu'); 
-
+        ->name('kartu');
 });

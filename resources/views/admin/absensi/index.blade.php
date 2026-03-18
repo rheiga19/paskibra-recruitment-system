@@ -10,14 +10,7 @@
     </div>
 </div>
 
-@if(session('success'))
-<div class="alert alert-success alert-dismissible fade show">
-    <i class="fas fa-check-circle mr-1"></i> {{ session('success') }}
-    <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-</div>
-@endif
-
-{{-- Macro select jam — dipakai ulang di dua form --}}
+{{-- Macro select jam --}}
 @php
     $jamOptions   = array_map(fn($h) => str_pad($h, 2, '0', STR_PAD_LEFT), range(0, 23));
     $menitOptions = ['00', '15', '30', '45'];
@@ -30,7 +23,9 @@
 
         {{-- Form tambah satu jadwal --}}
         <div class="card">
-            <div class="card-header"><h4><i class="fas fa-plus-circle mr-2"></i>Tambah Jadwal</h4></div>
+            <div class="card-header">
+                <h4><i class="fas fa-plus-circle mr-2"></i>Tambah Jadwal</h4>
+            </div>
             <div class="card-body">
                 <form action="{{ route('admin.absensi.store') }}" method="POST">
                     @csrf
@@ -53,8 +48,6 @@
                         <label class="font-weight-bold">Tanggal</label>
                         <input type="date" name="tanggal" class="form-control" required>
                     </div>
-
-                    {{-- Jam Masuk --}}
                     <div class="form-group">
                         <label class="font-weight-bold">Jam Masuk</label>
                         <div class="input-group">
@@ -73,8 +66,6 @@
                             </select>
                         </div>
                     </div>
-
-                    {{-- Jam Pulang --}}
                     <div class="form-group">
                         <label class="font-weight-bold">Jam Pulang</label>
                         <div class="input-group">
@@ -93,7 +84,6 @@
                             </select>
                         </div>
                     </div>
-
                     <div class="form-group">
                         <label class="font-weight-bold">Lokasi</label>
                         <input type="text" name="lokasi" class="form-control"
@@ -111,7 +101,7 @@
         </div>
 
         {{-- Form buat jadwal massal --}}
-        <div class="card mt-3">
+        <div class="card">
             <div class="card-header">
                 <h4><i class="fas fa-calendar-week mr-2"></i>Buat Jadwal Massal</h4>
             </div>
@@ -163,8 +153,6 @@
                             @endforeach
                         </div>
                     </div>
-
-                    {{-- Jam Masuk Bulk --}}
                     <div class="form-group">
                         <label class="font-weight-bold">Jam Masuk</label>
                         <div class="input-group">
@@ -183,8 +171,6 @@
                             </select>
                         </div>
                     </div>
-
-                    {{-- Jam Pulang Bulk --}}
                     <div class="form-group">
                         <label class="font-weight-bold">Jam Pulang</label>
                         <div class="input-group">
@@ -203,7 +189,6 @@
                             </select>
                         </div>
                     </div>
-
                     <div class="form-group">
                         <label class="font-weight-bold">Lokasi</label>
                         <input type="text" name="lokasi" class="form-control"
@@ -217,20 +202,19 @@
         </div>
 
     </div>
-    {{-- end col-lg-4 --}}
 
     {{-- ── KOLOM KANAN: Daftar jadwal ── --}}
     <div class="col-lg-8">
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="mb-0"><i class="fas fa-calendar-alt mr-2"></i>Jadwal Latihan</h4>
-                <div>
+            <div class="card-header">
+                <h4><i class="fas fa-calendar-alt mr-2"></i>Jadwal Latihan</h4>
+                <div class="card-header-action">
                     <a href="{{ route('admin.absensi.rekap', ['rekrutmen_id' => $rekrutmenId]) }}"
-                       class="btn btn-sm btn-info mr-1">
+                       class="btn btn-sm btn-info">
                         <i class="fas fa-chart-bar mr-1"></i> Rekap
                     </a>
                     <a href="{{ route('admin.absensi.export-excel', ['rekrutmen_id' => $rekrutmenId]) }}"
-                       class="btn btn-sm btn-success mr-1">
+                       class="btn btn-sm btn-success">
                         <i class="fas fa-file-excel mr-1"></i> Excel
                     </a>
                     <a href="{{ route('admin.absensi.export-pdf', ['rekrutmen_id' => $rekrutmenId]) }}"
@@ -240,48 +224,65 @@
                 </div>
             </div>
             <div class="card-body p-0">
-                @forelse($jadwalList as $j)
-                <div class="d-flex align-items-center justify-content-between px-4 py-3"
-                     style="border-bottom:1px solid #f0f0f0;">
-                    <div>
-                        <div class="font-weight-bold">
-                            {{ $j->nama }}
-                            @if($j->isHariIni())
-                            <span class="badge badge-primary ml-1">Hari Ini</span>
-                            @endif
-                        </div>
-                        <div class="text-muted" style="font-size:13px;">
-                            📅 {{ $j->tanggal->translatedFormat('l, d F Y') }}
-                            &nbsp;·&nbsp;
-                            🕐 {{ $j->jam_masuk }} – {{ $j->jam_pulang }}
-                            @if($j->lokasi) &nbsp;·&nbsp; 📍 {{ $j->lokasi }} @endif
-                        </div>
-                        <div class="mt-1">
-                            <span class="badge badge-success">{{ $j->jumlahHadir() }} Hadir</span>
-                            <span class="badge badge-danger">{{ $j->jumlahAlpha() }} Alpha</span>
-                        </div>
-                    </div>
-                    <div>
-                        <a href="{{ route('admin.absensi.scan', $j) }}"
-                           class="btn btn-sm btn-{{ $j->isHariIni() ? 'primary' : 'outline-primary' }} mr-1">
-                            <i class="fas fa-qrcode mr-1"></i>
-                            {{ $j->isHariIni() ? 'Scan Sekarang' : 'Buka Scan' }}
-                        </a>
-                        <form action="{{ route('admin.absensi.destroy', $j) }}" method="POST"
-                              onsubmit="return confirm('Hapus jadwal ini?')" style="display:inline;">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </form>
-                    </div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-md mb-0">
+                        <thead>
+                            <tr>
+                                <th>Sesi</th>
+                                <th>Tanggal</th>
+                                <th>Jam</th>
+                                <th>Kehadiran</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($jadwalList as $j)
+                            <tr>
+                                <td>
+                                    <b>{{ $j->nama }}</b>
+                                    @if($j->isHariIni())
+                                    <div class="badge badge-primary ml-1">Hari Ini</div>
+                                    @endif
+                                    @if($j->lokasi)
+                                    <br><small class="text-muted"><i class="fas fa-map-marker-alt mr-1"></i>{{ $j->lokasi }}</small>
+                                    @endif
+                                </td>
+                                <td>
+                                    <small>{{ $j->tanggal->translatedFormat('l, d F Y') }}</small>
+                                </td>
+                                <td>
+                                    <small>{{ $j->jam_masuk }} – {{ $j->jam_pulang }}</small>
+                                </td>
+                                <td>
+                                    <div class="badge badge-success">{{ $j->jumlahHadir() }} Hadir</div>
+                                    <div class="badge badge-danger">{{ $j->jumlahAlpha() }} Alpha</div>
+                                </td>
+                                <td class="text-right">
+                                    <a href="{{ route('admin.absensi.scan', $j) }}"
+                                       class="btn btn-sm btn-{{ $j->isHariIni() ? 'primary' : 'outline-primary' }}">
+                                        <i class="fas fa-qrcode mr-1"></i>
+                                        {{ $j->isHariIni() ? 'Scan' : 'Buka' }}
+                                    </a>
+                                    <form action="{{ route('admin.absensi.destroy', $j) }}" method="POST"
+                                          onsubmit="return confirm('Hapus jadwal ini?')" class="d-inline">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <i class="fas fa-calendar-times fa-2x d-block mb-2" style="opacity:.3;"></i>
+                                    Belum ada jadwal latihan.
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
-                @empty
-                <div class="text-center py-5 text-muted">
-                    <i class="fas fa-calendar-times fa-3x mb-3 d-block"></i>
-                    Belum ada jadwal latihan. Tambahkan jadwal di form sebelah kiri.
-                </div>
-                @endforelse
             </div>
         </div>
     </div>

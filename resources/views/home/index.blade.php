@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>{{ config('app.name') }} — Pasukan Pengibar Bendera</title>
+  <title>{{ isset($title) ? $title . ' — ' : '' }}{{ config('app.name', 'Paskibra Compreng') }}</title>
+  <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="{{ asset('css/home.css') }}">
 </head>
@@ -23,8 +24,8 @@
     <div class="flag-shine"></div>
   </div>
   <div class="hero-content">
-    <div class="hero-badge">
-      <span class="badge-dot"></span>
+    <div class="hero-badge" @if($rekrutmenAktif) style="background:rgba(28,200,138,.15);border-color:rgba(28,200,138,.4);color:#1cc88a;" @endif>
+      <span class="badge-dot" @if($rekrutmenAktif) style="background:#1cc88a;box-shadow:0 0 0 3px rgba(28,200,138,.3);" @endif></span>
       @if($rekrutmenAktif) Pendaftaran {{ $rekrutmenAktif->tahun }} Dibuka
       @else Paskibra Kecamatan Compreng @endif
     </div>
@@ -48,11 +49,11 @@
     </div>
     <div class="hero-stats">
       <div class="stat-item">
-        <div class="stat-num">{{ ($rekrutmenAktif && ($rekrutmenAktif->kuota_putra + $rekrutmenAktif->kuota_putri) > 0) ? ($rekrutmenAktif->kuota_putra + $rekrutmenAktif->kuota_putri) : '16' }}<span class="stat-accent">+</span></div>
+        <div class="stat-num">{{ ($rekrutmenAktif && ($rekrutmenAktif->kuota_putra + $rekrutmenAktif->kuota_putri) > 0) ? ($rekrutmenAktif->kuota_putra + $rekrutmenAktif->kuota_putri) : '32' }}<span class="stat-accent">+</span></div>
         <div class="stat-label">Kuota Peserta</div>
       </div>
       <div class="stat-item">
-        <div class="stat-num">{{ $tahapSeleksi->count() ?: '3' }}</div>
+        <div class="stat-num">{{ $tahapSeleksi->count() ?: '5' }}</div>
         <div class="stat-label">Tahap Seleksi</div>
       </div>
       <div class="stat-item">
@@ -73,20 +74,6 @@
     @endforeach
   </div>
 </div>
-
-{{-- STATUS REKRUTMEN --}}
-@if($rekrutmenAktif)
-<div class="rekrutmen-bar">
-  <div class="rekrutmen-bar-left">
-    <div class="badge-buka"><span class="badge-buka-dot"></span> PENDAFTARAN DIBUKA</div>
-    <strong>{{ $rekrutmenAktif->nama }}</strong>
-    <span style="color:var(--teks-redup);font-size:13px;">
-      {{ $rekrutmenAktif->tanggal_buka->format('d M') }} – {{ $rekrutmenAktif->tanggal_tutup->format('d M Y') }}
-    </span>
-  </div>
-  @guest <a href="{{ route('register') }}" class="btn-primary-red">Daftar Sekarang →</a> @endguest
-</div>
-@endif
 
 {{-- TENTANG --}}
 <section class="section" id="tentang">
@@ -373,8 +360,8 @@
       <div class="faq-a">Tinggi badan minimum adalah 165 cm untuk peserta putra dan 155 cm untuk peserta putri.</div>
     </div>
     <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)">Apakah siswa SMP bisa mendaftar? <span class="faq-toggle">+</span></div>
-      <div class="faq-a">Ya! Siswa aktif SMP, MTs, SMA, MA, maupun SMK sederajat dapat mendaftar sepanjang memenuhi semua persyaratan yang ditentukan.</div>
+      <div class="faq-q" onclick="toggleFaq(this)">Siapa saja yang bisa mendaftar? <span class="faq-toggle">+</span></div>
+      <div class="faq-a">Seleksi Paskibra Kecamatan Compreng hanya diperuntukkan bagi siswa aktif SMA, SMK, maupun MA kelas X. Siswa SMP/MTs tidak dapat mendaftar pada seleksi tingkat kecamatan ini.</div>
     </div>
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">Bagaimana cara mengetahui hasil seleksi? <span class="faq-toggle">+</span></div>

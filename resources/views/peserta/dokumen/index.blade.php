@@ -9,6 +9,20 @@
         <div class="breadcrumb-item active">Dokumen</div>
     </div>
 </div>
+{{-- Banner peringatan sebelum mendaftar --}}
+@if(!$pendaftaranAktif)
+<div class="alert alert-info" style="border-left:4px solid #3abaf4;">
+    <div class="d-flex align-items-start gap-3">
+        <i class="fas fa-exclamation-circle fa-2x text-info mr-3 mt-1"></i>
+        <div>
+            <strong>Perhatian sebelum mendaftar!</strong>
+            <p class="mb-0 mt-1">Pastikan semua dokumen yang diupload sudah <strong>benar dan terbaca jelas</strong>.
+            Setelah Anda menekan tombol <strong>Daftar</strong>, dokumen <strong>tidak bisa diubah lagi</strong>.
+            Periksa kembali setiap file sebelum melanjutkan pendaftaran.</p>
+        </div>
+    </div>
+</div>
+@endif
 
 @if(session('success'))
 <div class="alert alert-success alert-dismissible fade show">
@@ -66,7 +80,12 @@ $total    = count($dokList);
 
 <div class="row">
     @foreach($dokList as $key => $info)
-    @php $dok = $dokumen[$key] ?? null; @endphp
+    @php
+        $dok    = $dokumen[$key] ?? null;
+        $isImg  = $dok ? preg_match('/\.(jpg|jpeg|png|webp)$/i', $dok->path) : false;
+        // URL aman lewat controller, bukan storage langsung
+        $urlDok = $dok ? route('peserta.dokumen.lihat', $key) : null;
+    @endphp
     <div class="col-12 col-md-6 mb-3">
         <div class="card h-100 {{ $dok ? 'border-success' : '' }}" style="{{ $dok ? 'border-width:2px;' : '' }}">
             <div class="card-header">
@@ -85,12 +104,9 @@ $total    = count($dokList);
                 {{-- Preview --}}
                 @if($dok)
                 <div class="mb-3 text-center">
-                    @php
-                        $isImg = preg_match('/\.(jpg|jpeg|png|webp)$/i', $dok->path);
-                    @endphp
                     @if($isImg)
-                    <a href="{{ $dok->url }}" target="_blank">
-                        <img src="{{ $dok->url }}"
+                    <a href="{{ $urlDok }}" target="_blank">
+                        <img src="{{ $urlDok }}"
                              alt="{{ $info['label'] }}"
                              class="img-fluid rounded border"
                              style="max-height:160px;object-fit:cover;cursor:zoom-in;"
@@ -98,11 +114,11 @@ $total    = count($dokList);
                         <div style="display:none;align-items:center;justify-content:center;height:100px;"
                              class="bg-light rounded border text-muted flex-column">
                             <i class="fas fa-image fa-2x mb-1"></i>
-                            <small><a href="{{ $dok->url }}" target="_blank">Buka file</a></small>
+                            <small><a href="{{ $urlDok }}" target="_blank">Buka file</a></small>
                         </div>
                     </a>
                     @else
-                    <a href="{{ $dok->url }}" target="_blank" class="text-decoration-none">
+                    <a href="{{ $urlDok }}" target="_blank" class="text-decoration-none">
                         <div class="p-4 bg-light rounded border">
                             <i class="fas fa-file-pdf fa-3x text-danger d-block mb-2"></i>
                             <small class="text-muted">{{ $dok->nama_file }}</small>
@@ -164,8 +180,7 @@ $total    = count($dokList);
                     </button>
                 </form>
                 @endif
-
-                @endif {{-- end !pendaftaranAktif --}}
+                @endif
 
             </div>
         </div>

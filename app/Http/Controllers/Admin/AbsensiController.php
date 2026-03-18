@@ -15,6 +15,9 @@ class AbsensiController extends Controller
     // Toleransi hadir dalam menit
     const TOLERANSI_HADIR = 5;
 
+    // Jam sebelum jadwal absen sudah bisa dibuka
+    const JAM_BUKA_SEBELUM = 3;
+
     // ── Daftar Jadwal ────────────────────────────────────────────
     public function index(Request $request)
     {
@@ -453,37 +456,46 @@ class AbsensiController extends Controller
         return trim($qrCode);
     }
 
-    // ── Helper: Validasi waktu absen masuk ───────────────────────
+    // ── Helper: Validasi Waktu Absen Masuk ───────────────────────
     private function validasiWaktuMasuk(JadwalLatihan $jadwal): array
     {
-        $jamMasuk  = $this->parseJamJadwal($jadwal->tanggal, $jadwal->jam_masuk);
-        $jamPulang = $this->parseJamJadwal($jadwal->tanggal, $jadwal->jam_pulang);
-        $sekarang  = now();
+        $jamMasuk     = $this->parseJamJadwal($jadwal->tanggal, $jadwal->jam_masuk);
+        $jamPulang    = $this->parseJamJadwal($jadwal->tanggal, $jadwal->jam_pulang);
+        $jamBukaAbsen = $jamMasuk->copy()->subHours(self::JAM_BUKA_SEBELUM); // 3 jam sebelum jadwal
+        $sekarang     = now();
 
-        if ($sekarang->lt($jamMasuk)) {
+        // Belum masuk window absen (lebih dari 3 jam sebelum jadwal)
+        if ($sekarang->lt($jamBukaAbsen)) {
             return [
                 'boleh'  => false,
                 'status' => null,
-                'pesan'  => "❌ Belum waktunya absen. Jadwal masuk pukul {$jamMasuk->format('H:i')} WIB.",
+                'pesan'  => "Absen belum dibuka. Absen bisa dilakukan mulai pukul {$jamBukaAbsen->format('H:i')} WIB.",
             ];
         }
 
+        // Sudah melewati jam pulang
         if ($sekarang->gt($jamPulang)) {
             return [
                 'boleh'  => false,
                 'status' => null,
-                'pesan'  => "❌ Waktu absen masuk sudah berakhir pukul {$jamPulang->format('H:i')} WIB.",
+                'pesan'  => "Waktu absen masuk sudah berakhir pukul {$jamPulang->format('H:i')} WIB.",
             ];
         }
 
+        // Absen lebih awal (sebelum jam jadwal) → tetap 'hadir'
+        if ($sekarang->lt($jamMasuk)) {
+            return ['boleh' => true, 'status' => 'hadir', 'pesan' => ''];
+        }
+
+        // Absen tepat waktu (dalam toleransi 5 menit) → 'hadir'
         if ($sekarang->lte($jamMasuk->copy()->addMinutes(self::TOLERANSI_HADIR))) {
             return ['boleh' => true, 'status' => 'hadir', 'pesan' => ''];
         }
 
+        // Lewat toleransi → 'izin' (telat)
         return ['boleh' => true, 'status' => 'izin', 'pesan' => ''];
     }
 
-    // ── Helper: Parse jam jadwal ──────────────────────────────────
     private function parseJamJadwal($tanggal, string $jam): Carbon
     {
         $jamBersih = substr($jam, 0, 5);
@@ -493,7 +505,6 @@ class AbsensiController extends Controller
         );
     }
 
-    // ── Helper: Auto set waktu pulang ────────────────────────────
     private function autoSetPulang(Absensi $absensi, JadwalLatihan $jadwal): void
     {
         if (!in_array($absensi->status, ['hadir', 'izin'])) return;

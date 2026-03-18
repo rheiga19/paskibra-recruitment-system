@@ -1,7 +1,6 @@
 {{-- resources/views/partials/sidebar.blade.php --}}
 
 <style>
-/* ── Sidebar scrollable ── */
 #sidebar-wrapper {
     display: flex;
     flex-direction: column;
@@ -20,7 +19,6 @@
 .sidebar-menu-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,.2); border-radius: 3px; }
 .sidebar-menu-container:hover::-webkit-scrollbar-thumb { background: rgba(255,255,255,.4); }
 
-/* ── Dropdown submenu ── */
 .sidebar-menu .dropdown-nav {
     display: none;
     list-style: none;
@@ -43,16 +41,10 @@
     transition: background .2s;
 }
 
-.sidebar-menu .dropdown-nav li a:hover {
-    background: rgba(0,0,0,.08);
-}
-
+.sidebar-menu .dropdown-nav li a:hover { background: rgba(0,0,0,.08); }
 .sidebar-menu .dropdown-nav li.active > a,
-.sidebar-menu .dropdown-nav li a.active {
-    font-weight: 600;
-}
+.sidebar-menu .dropdown-nav li a.active { font-weight: 600; }
 
-/* ── Arrow rotasi saat open ── */
 .sidebar-menu li.dropdown.open > a.has-dropdown::after {
     transform: rotate(90deg);
 }
@@ -61,27 +53,22 @@
 <div class="main-sidebar sidebar-style-2">
     <aside id="sidebar-wrapper">
 
-        {{-- ── LOGO (full) ── --}}
+        {{-- Logo --}}
         <div class="sidebar-brand">
             <a href="{{ route('dashboard') }}">
                 <img src="{{ asset('images/logo.png') }}"
                      alt="Logo Paskibra"
                      class="header-logo"
-                     style="height:36px; width:auto; object-fit:contain;">
+                     style="height:36px;width:auto;object-fit:contain;">
                 <span class="logo-name">PASKIBRA COMPRENG</span>
             </a>
         </div>
-
-        {{-- ── LOGO (collapsed) ── --}}
         <div class="sidebar-brand sidebar-brand-sm">
             <a href="{{ route('dashboard') }}">
-                <img src="{{ asset('images/logo.png') }}"
-                     alt="Logo"
-                     style="height:28px; width:auto;">
+                <img src="{{ asset('images/logo.png') }}" alt="Logo" style="height:28px;width:auto;">
             </a>
         </div>
 
-        {{-- ── MENU (scrollable) ── --}}
         <div class="sidebar-menu-container">
             <ul class="sidebar-menu">
                 @auth
@@ -127,12 +114,32 @@
                             <span>Hasil Seleksi</span>
                         </a>
                     </li>
-                    <li class="{{ request()->routeIs('peserta.absensi.*') ? 'active' : '' }}">
+
+                    <li class="{{ request()->routeIs('peserta.absensi') ? 'active' : '' }}">
                         <a href="{{ route('peserta.absensi') }}" class="nav-link">
-                            <i class="bi bi-clipboard-check"></i>
+                            <i class="fas fa-clipboard-check"></i>
                             <span>Absensi</span>
                         </a>
                     </li>
+
+                    {{-- Kartu Anggota — hanya muncul jika lulus final --}}
+                    @php
+                        $rekrutmenAktif = \App\Models\Rekrutmen::where('is_aktif', true)->first();
+                        $sudahLulus = $rekrutmenAktif
+                            ? \App\Models\Pendaftaran::where('user_id', auth()->id())
+                                ->where('rekrutmen_id', $rekrutmenAktif->id)
+                                ->where('is_lulus_final', true)
+                                ->exists()
+                            : false;
+                    @endphp
+                    @if($sudahLulus)
+                    <li class="{{ request()->routeIs('peserta.kartu') ? 'active' : '' }}">
+                        <a href="{{ route('peserta.kartu') }}" class="nav-link">
+                            <i class="fas fa-id-card"></i>
+                            <span>Kartu Anggota</span>
+                        </a>
+                    </li>
+                    @endif
 
                 @endif
 
@@ -150,7 +157,6 @@
                         </a>
                     </li>
 
-                    {{-- Dropdown: Rekrutmen --}}
                     <li class="nav-item dropdown {{ request()->routeIs('admin.rekrutmen.*') ? 'active open' : '' }}">
                         <a href="#" class="nav-link has-dropdown" data-toggle="dropdown-sidebar">
                             <i class="fas fa-bullhorn"></i>
@@ -158,14 +164,10 @@
                         </a>
                         <ul class="dropdown-nav">
                             <li class="{{ request()->routeIs('admin.rekrutmen.index') ? 'active' : '' }}">
-                                <a href="{{ route('admin.rekrutmen.index') }}">
-                                    <i class="fas fa-list fa-xs mr-1"></i> Daftar Rekrutmen
-                                </a>
+                                <a href="{{ route('admin.rekrutmen.index') }}"><i class="fas fa-list fa-xs mr-1"></i> Daftar Rekrutmen</a>
                             </li>
                             <li class="{{ request()->routeIs('admin.rekrutmen.create') ? 'active' : '' }}">
-                                <a href="{{ route('admin.rekrutmen.create') }}">
-                                    <i class="fas fa-plus fa-xs mr-1"></i> Buat Rekrutmen
-                                </a>
+                                <a href="{{ route('admin.rekrutmen.create') }}"><i class="fas fa-plus fa-xs mr-1"></i> Buat Rekrutmen</a>
                             </li>
                         </ul>
                     </li>
@@ -177,7 +179,6 @@
                         </a>
                     </li>
 
-                    {{-- Dropdown: Seleksi --}}
                     <li class="nav-item dropdown {{ request()->routeIs('admin.seleksi.*') ? 'active open' : '' }}">
                         <a href="#" class="nav-link has-dropdown" data-toggle="dropdown-sidebar">
                             <i class="fas fa-star"></i>
@@ -185,21 +186,17 @@
                         </a>
                         <ul class="dropdown-nav">
                             <li class="{{ request()->routeIs('admin.seleksi.index') ? 'active' : '' }}">
-                                <a href="{{ route('admin.seleksi.index') }}">
-                                    <i class="fas fa-edit fa-xs mr-1"></i> Input Nilai
-                                </a>
+                                <a href="{{ route('admin.seleksi.index') }}"><i class="fas fa-edit fa-xs mr-1"></i> Input Nilai</a>
                             </li>
                             <li class="{{ request()->routeIs('admin.seleksi.hasil-akhir') ? 'active' : '' }}">
-                                <a href="{{ route('admin.seleksi.hasil-akhir') }}">
-                                    <i class="fas fa-trophy fa-xs mr-1"></i> Hasil Akhir
-                                </a>
+                                <a href="{{ route('admin.seleksi.hasil-akhir') }}"><i class="fas fa-trophy fa-xs mr-1"></i> Hasil Akhir</a>
                             </li>
                         </ul>
                     </li>
 
-                    <li class="nav-item">
+                    <li class="{{ request()->routeIs('admin.absensi.*') ? 'active' : '' }}">
                         <a href="{{ route('admin.absensi.index') }}" class="nav-link">
-                            <i class="bi bi-clipboard-check"></i>
+                            <i class="fas fa-clipboard-check"></i>
                             <span>Absensi</span>
                         </a>
                     </li>
@@ -273,12 +270,18 @@
                         </a>
                     </li>
 
+                    <li class="{{ request()->routeIs('panitia.absensi.*') ? 'active' : '' }}">
+                        <a href="{{ route('panitia.absensi.index') }}" class="nav-link">
+                            <i class="fas fa-clipboard-check"></i>
+                            <span>Absensi</span>
+                        </a>
+                    </li>
+
                 @endif
 
                 @endauth
             </ul>
         </div>
-        {{-- end .sidebar-menu-container --}}
 
     </aside>
 </div>
@@ -288,16 +291,11 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('[data-toggle="dropdown-sidebar"]').forEach(function (el) {
         el.addEventListener('click', function (e) {
             e.preventDefault();
-
             var parent = this.closest('li.dropdown');
             var isOpen = parent.classList.contains('open');
-
-            // Tutup semua dropdown lain
             document.querySelectorAll('.sidebar-menu li.dropdown.open').forEach(function (item) {
                 if (item !== parent) item.classList.remove('open');
             });
-
-            // Toggle yang diklik
             parent.classList.toggle('open', !isOpen);
         });
     });
