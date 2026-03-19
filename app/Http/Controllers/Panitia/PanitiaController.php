@@ -62,10 +62,9 @@ class PanitiaController extends Controller
     // ── Verifikasi Show ────────────────────────────────────────────────
     public function verifikasiShow(Pendaftaran $pendaftaran)
     {
-        // Load relasi dokumen
         $pendaftaran->load('dokumen');
 
-        // Ubah collection dokumen jadi array key => item
+        // HAPUS .toArray() — biarkan tetap Collection
         $dokumen = $pendaftaran->dokumen->keyBy('jenis');
 
         $ids  = Pendaftaran::orderBy('id')->pluck('id');

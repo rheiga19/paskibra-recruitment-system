@@ -111,7 +111,7 @@
                 <div class="row">
                     @foreach($dokList as $jenis => $label)
                     @php
-                        $dok      = $dokumen[$jenis] ?? null;
+                        $dok = $dokumen->get($jenis) ?? null;
                         $fileUrl  = null;
                         $isImage  = false;
                         if ($dok) {

@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Kartu Peserta Paskibra</title>
+<title>Kartu Calon Anggota Paskibra</title>
 <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -378,7 +378,7 @@ body {
     <div class="right">
 
         <div class="right-header">
-            <div class="kartu-title">Kartu Peserta Rekrutmen</div>
+            <div class="kartu-title">Kartu Calon Anggota</div>
             <div class="kartu-subtitle">
                 Paskibra Kecamatan {{ config('app.nama_kecamatan', 'Compreng') }} &mdash;
                 Seleksi Tahun {{ $pendaftaran->rekrutmen->tahun ?? date('Y') }}
