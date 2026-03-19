@@ -85,7 +85,6 @@ class DokumenDownloadController extends Controller
             $dokumen = DokumenPeserta::where('user_id', $p->user_id)->get();
             if ($dokumen->isEmpty()) continue;
 
-            // Nama folder dalam ZIP — bersihkan karakter
             $namaFolder = preg_replace('/[^A-Za-z0-9_\-]/', '_', $p->no_pendaftaran . '_' . $p->nama_lengkap) . '/';
 
             foreach ($dokumen as $dok) {
@@ -104,7 +103,7 @@ class DokumenDownloadController extends Controller
         return response()->download($tmpPath, $namaZip)->deleteFileAfterSend(true);
     }
 
-    // ── Helper: cari file di local dulu, fallback ke public ────────────
+    
     private function resolveFilePath(string $path): ?string
     {
         $localPath = storage_path('app' . DIRECTORY_SEPARATOR . $path);

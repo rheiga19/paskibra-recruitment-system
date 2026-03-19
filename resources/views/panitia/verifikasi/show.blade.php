@@ -96,9 +96,6 @@
             </div>
             <div class="card-body">
                 @php
-                    use Illuminate\Support\Str;
-
-                    // Key harus sama dengan enum di migration dokumen_pendaftaran
                     $dokList = [
                         'foto_4x6'        => 'Pas Foto 4×6',
                         'ktp_pelajar'     => 'Kartu Pelajar / KTP',
@@ -111,17 +108,13 @@
                 <div class="row">
                     @foreach($dokList as $jenis => $label)
                     @php
-                        $dok = $dokumen->get($jenis) ?? null;
-                        $fileUrl  = null;
-                        $isImage  = false;
-                        if ($dok) {
-                            $cleanPath = $dok->path;
-                            if (Str::startsWith($cleanPath, 'public/')) {
-                                $cleanPath = Str::after($cleanPath, 'public/');
-                            }
-                            $fileUrl = asset('storage/' . $cleanPath);
-                            $isImage = Str::endsWith(strtolower($cleanPath), ['.jpg','.jpeg','.png','.webp']);
-                        }
+                        $dok     = $dokumen->get($jenis) ?? null;
+                        // PERBAIKAN: file disimpan private, wajib lewat route controller
+                        // bukan asset('storage/...') yang hanya bisa baca disk public
+                        $fileUrl = $dok ? route('panitia.dokumen.lihat', $dok) : null;
+                        $isImage = $dok
+                            ? in_array(strtolower(pathinfo($dok->nama_file, PATHINFO_EXTENSION)), ['jpg','jpeg','png','webp'])
+                            : false;
                     @endphp
                     <div class="col-6 col-md-4 mb-3">
                         <div class="border rounded p-2 text-center" style="min-height:120px;">
@@ -129,22 +122,18 @@
 
                             @if($dok && $fileUrl)
                                 @if($isImage)
-                                <a href="{{ $fileUrl }}" target="_blank">
-                                    <img src="{{ $fileUrl }}"
-                                         alt="{{ $label }}"
-                                         class="img-fluid rounded"
-                                         style="max-height:80px; object-fit:cover; cursor:zoom-in;"
-                                         onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-                                    <div style="display:none" class="text-muted">
-                                        <i class="fas fa-image fa-2x"></i>
-                                        <br><small><a href="{{ $fileUrl }}" target="_blank">Buka</a></small>
-                                    </div>
-                                </a>
+                                    {{-- Gambar ditampilkan via <img> dengan src dari route controller --}}
+                                    <a href="{{ $fileUrl }}" target="_blank">
+                                        <img src="{{ $fileUrl }}"
+                                             alt="{{ $label }}"
+                                             class="img-fluid rounded"
+                                             style="max-height:80px; object-fit:cover; cursor:zoom-in;">
+                                    </a>
                                 @else
-                                <a href="{{ $fileUrl }}" target="_blank"
-                                   class="btn btn-sm btn-outline-danger mt-2">
-                                    <i class="fas fa-file-pdf mr-1"></i> Lihat PDF
-                                </a>
+                                    <a href="{{ $fileUrl }}" target="_blank"
+                                       class="btn btn-sm btn-outline-danger mt-2">
+                                        <i class="fas fa-file-pdf mr-1"></i> Lihat PDF
+                                    </a>
                                 @endif
                                 <div class="mt-1">
                                     <span class="badge badge-success">

@@ -185,18 +185,14 @@ class PesertaController extends Controller
             ->header('Content-Disposition', 'inline; filename="' . $dokumenPeserta->nama_file . '"');
     }
 
-    // ── Helper: cari file di local dulu, fallback ke public ────────────
-    // Menangani dokumen lama (disk public) dan dokumen baru (disk local)
     private function resolveFile(string $path, string $namaFile): array
     {
-        // Coba disk local dulu (upload baru)
         if (Storage::disk('local')->exists($path)) {
             $mime = Storage::disk('local')->mimeType($path);
             $file = Storage::disk('local')->get($path);
             return ['local', $file, $mime];
         }
 
-        // Fallback ke disk public (upload lama sebelum migrasi)
         if (Storage::disk('public')->exists($path)) {
             $mime = Storage::disk('public')->mimeType($path);
             $file = Storage::disk('public')->get($path);
@@ -206,7 +202,6 @@ class PesertaController extends Controller
         abort(404, 'File dokumen tidak ditemukan.');
     }
 
-    // ── Dokumen — Hapus ────────────────────────────────────────────────
     public function dokumenHapus(Request $request, string $jenis)
     {
         $jenisList = ['foto_4x6', 'ktp_pelajar', 'akta_kelahiran', 'rapor', 'surat_sehat', 'surat_izin_ortu'];
@@ -234,7 +229,6 @@ class PesertaController extends Controller
         return back()->with('error', 'Dokumen tidak ditemukan.');
     }
 
-    // ── Pendaftaran — Index ────────────────────────────────────────────
     public function pendaftaranIndex()
     {
         $pendaftaran = Pendaftaran::where('user_id', auth()->id())
@@ -245,7 +239,6 @@ class PesertaController extends Controller
         return view('peserta.pendaftaran.index', compact('pendaftaran'));
     }
 
-    // ── Pendaftaran — Show ─────────────────────────────────────────────
     public function pendaftaranShow(Pendaftaran $pendaftaran)
     {
         abort_unless($pendaftaran->user_id === auth()->id(), 403);
@@ -263,7 +256,7 @@ class PesertaController extends Controller
         return view('peserta.pendaftaran.show', compact('pendaftaran', 'jenisList'));
     }
 
-    // ── Pendaftaran — Cetak Kartu ──────────────────────────────────────
+    
     public function pendaftaranKartu(Pendaftaran $pendaftaran)
     {
         abort_unless($pendaftaran->user_id === auth()->id(), 403);
@@ -279,7 +272,7 @@ class PesertaController extends Controller
         return $pdf->download('kartu-peserta-' . $pendaftaran->no_pendaftaran . '.pdf');
     }
 
-    // ── Apply ──────────────────────────────────────────────────────────
+
     public function pendaftaranApply(Rekrutmen $rekrutmen)
     {
         $user = auth()->user();
@@ -334,7 +327,6 @@ class PesertaController extends Controller
             'status'         => 'menunggu',
         ]);
 
-        // Snapshot dokumen ke dokumen_pendaftaran (path tetap sama, private)
         $dokumenPeserta = DokumenPeserta::where('user_id', $user->id)->get();
         foreach ($dokumenPeserta as $d) {
             DokumenPendaftaran::create([
@@ -349,7 +341,6 @@ class PesertaController extends Controller
                          ->with('success', 'Pendaftaran berhasil! No. Daftar: ' . $pendaftaran->no_pendaftaran);
     }
 
-    // ── Hasil Seleksi ──────────────────────────────────────────────────
     public function hasilSeleksi()
     {
         $user        = auth()->user();
@@ -367,7 +358,6 @@ class PesertaController extends Controller
         return view('peserta.hasil.hasil-seleksi', compact('pendaftaran', 'hasilList'));
     }
 
-    // ── Kartu Anggota ──────────────────────────────────────────────────
     public function kartuAnggota()
     {
         $user        = auth()->user();
@@ -386,7 +376,6 @@ class PesertaController extends Controller
         return view('peserta.kartu-anggota', compact('pendaftaran', 'rekrutmen'));
     }
 
-    // ── Rekap Absensi Peserta ──────────────────────────────────────────
     public function absensiIndex()
     {
         $user         = auth()->user();
@@ -415,7 +404,6 @@ class PesertaController extends Controller
         return view('peserta.absensi', compact('pendaftaran', 'rekapAbsensi', 'totalHadir', 'totalAll', 'persen'));
     }
 
-    // ── Helpers ────────────────────────────────────────────────────────
     private function cekProfilLengkap(?ProfilPeserta $profil): bool
     {
         if (!$profil) return false;
@@ -453,7 +441,6 @@ class PesertaController extends Controller
         $tahun = $rekrutmen->tahun ?? date('Y');
         $prefix = 'PSK-' . $tahun . '-';
 
-        // Cari nomor urut tertinggi yang sudah ada, lalu +1
         $last = Pendaftaran::where('rekrutmen_id', $rekrutmen->id)
             ->where('no_pendaftaran', 'like', $prefix . '%')
             ->orderByRaw('CAST(SUBSTRING(no_pendaftaran, ' . (strlen($prefix) + 1) . ') AS UNSIGNED) DESC')
