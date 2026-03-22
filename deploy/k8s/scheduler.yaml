@@ -1,0 +1,45 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: laravel-scheduler
+  namespace: paskibra
+spec:
+  schedule: "* * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: scheduler
+              image: docker.io/library/laravel-paskibra:latest
+              imagePullPolicy: Never
+              command: ["php", "artisan", "schedule:run"]
+              env:
+                - name: APP_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: laravel-secret
+                      key: APP_KEY
+                - name: DB_CONNECTION
+                  value: "pgsql"
+                - name: DB_HOST
+                  value: "192.168.100.49"
+                - name: DB_PORT
+                  value: "5432"
+                - name: DB_DATABASE
+                  value: "paskibra_db"
+                - name: DB_USERNAME
+                  value: "admin"
+                - name: DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: laravel-secret
+                      key: DB_PASSWORD
+                - name: REDIS_HOST
+                  value: "redis"
+                - name: REDIS_PORT
+                  value: "6379"
+          restartPolicy: OnFailure
