@@ -2,132 +2,344 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Kartu Peserta Rekrutmen Paskibra</title>
+<title>Kartu Calon Anggota Paskibra</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+@page {
+    size: A4 landscape;
+    margin: 0;
+}
+
 body {
-    font-family: 'Times New Roman', Times, serif;
-    padding: 10mm 12mm;
+    font-family: 'DejaVu Sans', Arial, sans-serif;
+    width: 297mm;
+    height: 210mm;
+    overflow: hidden;
+    background: #fff;
+}
+
+.card-wrap {
+    width: 297mm;
+    height: 210mm;
+    display: flex;
     position: relative;
-    min-height: 100%;
+    background: #fff;
 }
 
-/* HEADER */
-.header { width: 100%; border-bottom: 2px solid #000; margin-bottom: 10px; }
-.header td { vertical-align: middle; padding-bottom: 6px; }
-.header img { width: 16mm; height: 16mm; }
-.title { font-size: 13pt; font-weight: bold; }
-.subtitle { font-size: 10pt; font-weight: bold; }
+.left {
+    width: 72mm;
+    height: 210mm;
+    background: linear-gradient(160deg, #c0392b 0%, #922b21 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10mm 6mm;
+    position: relative;
+    overflow: hidden;
+}
+.left::before {
+    content: '';
+    position: absolute;
+    top: -30mm; left: -20mm;
+    width: 70mm; height: 70mm;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.07);
+}
+.left::after {
+    content: '';
+    position: absolute;
+    bottom: -20mm; right: -25mm;
+    width: 60mm; height: 60mm;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.07);
+}
+.logo-wrap {
+    width: 22mm; height: 22mm;
+    margin-bottom: 5mm;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3mm;
+}
+.logo-wrap img { width: 100%; height: 100%; object-fit: contain; }
+.org-name {
+    color: #fff; font-size: 11pt; font-weight: bold;
+    text-align: center; line-height: 1.4; letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 2mm;
+}
+.org-sub {
+    color: rgba(255,255,255,0.75); font-size: 7.5pt;
+    text-align: center; line-height: 1.5;
+}
+.divider-left {
+    width: 30mm; height: 1px;
+    background: rgba(255,255,255,0.35);
+    margin: 5mm 0;
+}
+.kartu-label {
+    color: #fff; font-size: 8pt; text-align: center;
+    text-transform: uppercase; letter-spacing: 2px; font-weight: bold;
+}
+.tahun {
+    color: rgba(255,255,255,0.8); font-size: 9pt;
+    text-align: center; margin-top: 2mm;
+}
 
-/* DATA */
-.data td { font-size: 10pt; padding: 3px 0; }
-.label { width: 40mm; text-transform: uppercase; font-size: 9pt; }
-.sep { width: 5mm; }
-.value { font-weight: bold; text-transform: uppercase; }
-
-/* FOTO */
+.right {
+    flex: 1; height: 210mm;
+    padding: 10mm 12mm 8mm 10mm;
+    display: flex; flex-direction: column;
+    position: relative; background: #fff;
+}
+.right::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2.5mm;
+    background: linear-gradient(90deg, #c0392b, #e74c3c, #f39c12);
+}
+.right-header {
+    margin-top: 5mm; margin-bottom: 6mm;
+    border-bottom: 0.5px solid #e0e0e0;
+    padding-bottom: 5mm;
+}
+.right-header .kartu-title {
+    font-size: 14pt; font-weight: bold;
+    color: #c0392b; text-transform: uppercase; letter-spacing: 1px;
+}
+.right-header .kartu-subtitle {
+    font-size: 8.5pt; color: #666; margin-top: 1mm;
+}
+.body-wrap { display: flex; flex: 1; gap: 8mm; }
+.data-wrap { flex: 1; }
+.no-peserta {
+    background: #c0392b; color: #fff;
+    font-size: 11pt; font-weight: bold;
+    letter-spacing: 2px; padding: 2mm 5mm;
+    border-radius: 2mm; display: inline-block; margin-bottom: 5mm;
+}
+.data-row { display: flex; margin-bottom: 3.5mm; align-items: flex-start; }
+.data-label {
+    width: 38mm; font-size: 8pt; color: #888;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    padding-top: 0.5mm; flex-shrink: 0;
+}
+.data-sep { width: 5mm; font-size: 8pt; color: #aaa; flex-shrink: 0; }
+.data-value { font-size: 9.5pt; font-weight: bold; color: #222; line-height: 1.4; }
+.badge-status {
+    display: inline-block;
+    color: #fff; font-size: 7.5pt; font-weight: bold;
+    padding: 1mm 3mm; border-radius: 1mm;
+    text-transform: uppercase; letter-spacing: 1px; margin-top: 4mm;
+}
+.fisik-wrap { display: flex; gap: 4mm; margin-top: 4mm; }
+.fisik-box {
+    background: #f8f8f8; border: 0.5px solid #e0e0e0;
+    border-radius: 2mm; padding: 2mm 4mm; text-align: center;
+}
+.fisik-val { font-size: 11pt; font-weight: bold; color: #c0392b; }
+.fisik-lab { font-size: 7pt; color: #999; text-transform: uppercase; }
+.foto-qr-wrap {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 3mm; flex-shrink: 0;
+}
 .foto-box {
-    width: 40mm;
-    height: 60mm;
-    border: 1px solid #000;
-    text-align: center;
-    vertical-align: middle;
+    width: 35mm; height: 45mm;
+    border: 1px solid #ddd; overflow: hidden;
+    background: #f5f5f5; display: flex;
+    align-items: center; justify-content: center;
+    border-radius: 1.5mm;
 }
-.foto-box span { font-size: 9pt; line-height: 1.5; display: inline-block; }
-
-/* FOOTER — fixed di bawah */
+.foto-box img { width: 100%; height: 100%; object-fit: cover; }
+.foto-placeholder { font-size: 7.5pt; color: #bbb; text-align: center; line-height: 1.6; }
+.qr-box {
+    width: 25mm; height: 25mm;
+    border: 0.5px solid #ddd; padding: 1mm;
+    border-radius: 1mm; background: #fff;
+}
+.qr-box img { width: 100%; height: 100%; }
+.qr-label {
+    font-size: 6.5pt; color: #aaa; text-align: center;
+    text-transform: uppercase; letter-spacing: 0.5px;
+}
 .footer {
-    position: fixed;
-    bottom: 10mm;
-    left: 12mm;
-    right: 12mm;
-    font-size: 8pt;
-    font-style: italic;
-    color: #555;
-    border-top: 1px solid #ccc;
-    padding-top: 5px;
+    border-top: 0.5px solid #eee; padding-top: 3mm;
+    margin-top: auto; display: flex;
+    justify-content: space-between; align-items: flex-end;
 }
+.footer-note { font-size: 7pt; color: #aaa; font-style: italic; line-height: 1.6; }
+.ttd-wrap { text-align: center; min-width: 45mm; }
+.ttd-line {
+    border-bottom: 1px solid #333; width: 40mm;
+    margin: 0 auto 1mm; height: 10mm;
+}
+.ttd-nama { font-size: 7.5pt; font-weight: bold; color: #333; }
+.ttd-jabatan { font-size: 6.5pt; color: #888; }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<table class="header" width="100%">
-<tr>
-    <td width="20mm">
-        <img src="{{ public_path('images/logo.png') }}" alt="Logo">
-    </td>
-    <td>
-        <div class="title">Kartu Peserta Rekrutmen Paskibra</div>
-        <div class="subtitle">
-            Kecamatan {{ config('app.nama_kecamatan', 'Compreng') }} — Tahun {{ config('app.tahun', date('Y')) }}
+@php
+    use Illuminate\Support\Facades\Storage;
+
+    // Logo
+    $logoPath = public_path('images/logo.png');
+    $logoSrc  = '';
+    if (file_exists($logoPath)) {
+        $logoSrc = 'data:' . mime_content_type($logoPath) . ';base64,' . base64_encode(file_get_contents($logoPath));
+    }
+
+    // Foto peserta
+    $fotoSrc = '';
+    $fotoDok = \App\Models\DokumenPeserta::where('user_id', $pendaftaran->user_id)
+                ->where('jenis', 'foto_4x6')
+                ->first();
+    if ($fotoDok) {
+        if (Storage::disk('local')->exists($fotoDok->path)) {
+            $fotoSrc = 'data:' . Storage::disk('local')->mimeType($fotoDok->path) . ';base64,' . base64_encode(Storage::disk('local')->get($fotoDok->path));
+        } elseif (Storage::disk('public')->exists($fotoDok->path)) {
+            $fotoSrc = 'data:' . Storage::disk('public')->mimeType($fotoDok->path) . ';base64,' . base64_encode(Storage::disk('public')->get($fotoDok->path));
+        }
+    }
+
+    // QR Code
+    $qrSrc  = '';
+    $qrData = $pendaftaran->no_pendaftaran . '|' . $pendaftaran->nama_lengkap;
+    $qrUrl  = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' . urlencode($qrData);
+    try {
+        $qrContent = @file_get_contents($qrUrl);
+        if ($qrContent) {
+            $qrSrc = 'data:image/png;base64,' . base64_encode($qrContent);
+        }
+    } catch (\Exception $e) {}
+@endphp
+
+<div class="card-wrap">
+
+    {{-- KIRI --}}
+    <div class="left">
+        <div class="logo-wrap">
+            @if($logoSrc)
+                <img src="{{ $logoSrc }}" alt="Logo">
+            @else
+                <div style="color:#fff;font-size:7pt;text-align:center;font-weight:bold;">PASKIBRA</div>
+            @endif
         </div>
-    </td>
-</tr>
-</table>
+        <div class="org-name">PASKIBRA<br>KECAMATAN</div>
+        <div class="org-sub">{{ config('app.nama_kecamatan', 'Compreng') }}<br>Kabupaten Subang</div>
+        <div class="divider-left"></div>
+        <div class="kartu-label">Kartu<br>Peserta</div>
+        <div class="tahun">{{ $pendaftaran->rekrutmen->tahun ?? date('Y') }}</div>
+    </div>
 
-<!-- BODY -->
-<table width="100%">
-<tr>
+    {{-- KANAN --}}
+    <div class="right">
+        <div class="right-header">
+            <div class="kartu-title">Kartu Calon Anggota</div>
+            <div class="kartu-subtitle">
+                Paskibra Kecamatan {{ config('app.nama_kecamatan', 'Compreng') }} &mdash;
+                Seleksi Tahun {{ $pendaftaran->rekrutmen->tahun ?? date('Y') }}
+            </div>
+        </div>
 
-    <td width="70%" valign="top">
-        <table class="data">
-            <tr>
-                <td class="label">No. Peserta</td>
-                <td class="sep">:</td>
-                <td class="value">{{ $pendaftaran->no_pendaftaran }}</td>
-            </tr>
-            <tr>
-                <td class="label">Nama</td>
-                <td class="sep">:</td>
-                <td class="value">{{ $pendaftaran->nama_lengkap }}</td>
-            </tr>
-            <tr>
-                <td class="label">Tempat Lahir</td>
-                <td class="sep">:</td>
-                <td class="value">{{ $pendaftaran->tempat_lahir }}</td>
-            </tr>
-            <tr>
-                <td class="label">Tanggal Lahir</td>
-                <td class="sep">:</td>
-                <td class="value">
-                    {{ \Carbon\Carbon::parse($pendaftaran->tanggal_lahir)->translatedFormat('d F Y') }}
-                </td>
-            </tr>
-            <tr>
-                <td class="label">Asal Sekolah</td>
-                <td class="sep">:</td>
-                <td class="value">{{ $pendaftaran->nama_sekolah }}</td>
-            </tr>
-            <tr>
-                <td class="label">Alamat</td>
-                <td class="sep">:</td>
-                <td class="value">{{ $pendaftaran->alamat_lengkap }}</td>
-            </tr>
-        </table>
-    </td>
+        <div class="body-wrap">
+            <div class="data-wrap">
+                <div class="no-peserta">{{ $pendaftaran->no_pendaftaran }}</div>
 
-    <td width="30%" align="center" valign="top">
-        <table>
-            <tr>
-                <td class="foto-box">
-                    <span>
-                        Tempelkan<br>
-                        Pas Foto<br>
-                        Ukuran 4×6
-                    </span>
-                </td>
-            </tr>
-        </table>
-    </td>
+                <div class="data-row">
+                    <div class="data-label">Nama Lengkap</div>
+                    <div class="data-sep">:</div>
+                    <div class="data-value">{{ strtoupper($pendaftaran->nama_lengkap) }}</div>
+                </div>
+                <div class="data-row">
+                    <div class="data-label">Tempat, Tgl Lahir</div>
+                    <div class="data-sep">:</div>
+                    <div class="data-value">
+                        {{ strtoupper($pendaftaran->tempat_lahir) }},
+                        {{ \Carbon\Carbon::parse($pendaftaran->tanggal_lahir)->translatedFormat('d F Y') }}
+                    </div>
+                </div>
+                <div class="data-row">
+                    <div class="data-label">Jenis Kelamin</div>
+                    <div class="data-sep">:</div>
+                    <div class="data-value">
+                        {{ $pendaftaran->jenis_kelamin === 'L' ? 'LAKI-LAKI' : 'PEREMPUAN' }}
+                    </div>
+                </div>
+                <div class="data-row">
+                    <div class="data-label">Asal Sekolah</div>
+                    <div class="data-sep">:</div>
+                    <div class="data-value">{{ strtoupper($pendaftaran->nama_sekolah) }}</div>
+                </div>
+                <div class="data-row">
+                    <div class="data-label">Kelas</div>
+                    <div class="data-sep">:</div>
+                    <div class="data-value">{{ $pendaftaran->kelas }}</div>
+                </div>
+                <div class="data-row">
+                    <div class="data-label">Alamat</div>
+                    <div class="data-sep">:</div>
+                    <div class="data-value" style="font-size:8.5pt;">{{ $pendaftaran->alamat_lengkap }}</div>
+                </div>
 
-</tr>
-</table>
+                <div class="fisik-wrap">
+                    <div class="fisik-box">
+                        <div class="fisik-val">{{ $pendaftaran->tinggi_badan }} cm</div>
+                        <div class="fisik-lab">Tinggi</div>
+                    </div>
+                    <div class="fisik-box">
+                        <div class="fisik-val">{{ $pendaftaran->berat_badan }} kg</div>
+                        <div class="fisik-lab">Berat</div>
+                    </div>
+                    @if($pendaftaran->golongan_darah)
+                    <div class="fisik-box">
+                        <div class="fisik-val">{{ $pendaftaran->golongan_darah }}</div>
+                        <div class="fisik-lab">Gol. Darah</div>
+                    </div>
+                    @endif
+                </div>
 
-<!-- FOOTER fixed di margin bawah -->
-<div class="footer">
-    * Kartu ini wajib dibawa saat seleksi berlangsung.
+                {{-- Badge dinamis --}}
+                @if($pendaftaran->is_lulus_final)
+                    <div class="badge-status" style="background:#c0392b;">&#10003; Lulus Seleksi</div>
+                @else
+                    <div class="badge-status" style="background:#27ae60;">&#10003; Lolos Administrasi</div>
+                @endif
+            </div>
+
+            {{-- Foto & QR --}}
+            <div class="foto-qr-wrap">
+                <div class="foto-box">
+                    @if($fotoSrc)
+                        <img src="{{ $fotoSrc }}" alt="Foto">
+                    @else
+                        <div class="foto-placeholder">Pas Foto<br>4 × 6</div>
+                    @endif
+                </div>
+                <div class="qr-box">
+                    @if($qrSrc)
+                        <img src="{{ $qrSrc }}" alt="QR">
+                    @endif
+                </div>
+                <div class="qr-label">Scan untuk absensi</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="footer-note">
+                * Kartu ini wajib dibawa saat latihan berlangsung.<br>
+                * Tunjukkan kartu kepada panitia untuk pencatatan kehadiran.
+            </div>
+            <div class="ttd-wrap">
+                <div class="ttd-line"></div>
+                <div class="ttd-nama">Ketua Panitia</div>
+                <div class="ttd-jabatan">Paskibra Kec. {{ config('app.nama_kecamatan', 'Compreng') }}</div>
+            </div>
+        </div>
+    </div>
 </div>
 
 </body>

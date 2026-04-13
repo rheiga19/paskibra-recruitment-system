@@ -34,17 +34,29 @@ class DokumenController extends Controller
         return view('peserta.dokumen.index', compact('dokumen', 'pendaftaranAktif'));
     }
 
-    // KEAMANAN: file disimpan di storage/app/private/dokumen (bukan public)
-    // Akses file hanya lewat route peserta.dokumen.lihat yang cek auth
     public function upload(Request $request)
     {
         $request->validate([
-            'jenis' => ['required', 'in:' . implode(',', self::JENIS_LIST)],
-            'file'  => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
+            'files'                => ['required', 'array'],
+            'files.foto_4x6'       => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:1024'],
+            'files.ktp_pelajar'    => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
+            'files.akta_kelahiran' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
+            'files.rapor'          => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
+            'files.surat_sehat'    => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
+            'files.surat_izin_ortu'=> ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
+        ], [
+            'files.required'            => 'Tidak ada file yang dipilih.',
+            'files.foto_4x6.mimes'      => 'Pas foto harus berformat JPG atau PNG (wajib berlatar merah).',
+            'files.foto_4x6.max'        => 'Pas foto maksimal 1MB.',
+            'files.ktp_pelajar.mimes'   => 'Kartu Pelajar/KTP harus berformat JPG, PNG, atau PDF.',
+            'files.akta_kelahiran.mimes'=> 'Akta Kelahiran harus berformat JPG, PNG, atau PDF.',
+            'files.rapor.mimes'         => 'Rapor harus berformat JPG, PNG, atau PDF.',
+            'files.surat_sehat.mimes'   => 'Surat Sehat harus berformat JPG, PNG, atau PDF.',
+            'files.surat_izin_ortu.mimes'=> 'Surat Izin Orang Tua harus berformat JPG, PNG, atau PDF.',
+            'files.*.max'               => 'Ukuran file maksimal 2MB.',
         ]);
 
-        $user  = auth()->user();
-        $jenis = $request->jenis;
+        $user = auth()->user();
 
         // Dokumen dikunci setelah mendaftar
         $rekrutmenAktif = Rekrutmen::where('is_aktif', true)->latest()->first();
@@ -57,29 +69,42 @@ class DokumenController extends Controller
             }
         }
 
-        // Hapus file lama jika ada
-        $lama = DokumenPeserta::where('user_id', $user->id)->where('jenis', $jenis)->first();
-        if ($lama) {
-            Storage::disk('local')->delete($lama->path);
-            $lama->delete();
+        $berhasilCount = 0;
+
+        foreach ($request->file('files', []) as $jenis => $file) {
+            // Skip jika bukan jenis valid atau file null
+            if (!in_array($jenis, self::JENIS_LIST) || !$file) continue;
+
+            // Hapus file lama jika ada
+            $lama = DokumenPeserta::where('user_id', $user->id)->where('jenis', $jenis)->first();
+            if ($lama) {
+                Storage::disk('local')->delete($lama->path);
+                $lama->delete();
+            }
+
+            $namaAsli = $file->getClientOriginalName();
+            $ext      = strtolower($file->getClientOriginalExtension());
+            $folder   = 'dokumen/' . $user->id . '_' . Str::slug($user->name);
+            $namaFile = $jenis . '.' . $ext;
+
+            // Simpan ke storage/app/private (disk: local)
+            $path = $file->storeAs($folder, $namaFile, 'local');
+
+            DokumenPeserta::create([
+                'user_id'   => $user->id,
+                'jenis'     => $jenis,
+                'path'      => $path,
+                'nama_file' => $namaAsli,
+            ]);
+
+            $berhasilCount++;
         }
 
-        $namaAsli = $request->file('file')->getClientOriginalName();
-        $ext      = strtolower($request->file('file')->getClientOriginalExtension());
-        $folder   = 'dokumen/' . $user->id . '_' . Str::slug($user->name);
-        $namaFile = $jenis . '.' . $ext;
+        if ($berhasilCount === 0) {
+            return back()->with('error', 'Tidak ada dokumen yang berhasil disimpan.');
+        }
 
-        // Simpan ke storage/app/private (disk: local) — tidak bisa diakses via URL langsung
-        $path = $request->file('file')->storeAs($folder, $namaFile, 'local');
-
-        DokumenPeserta::create([
-            'user_id'   => $user->id,
-            'jenis'     => $jenis,
-            'path'      => $path,
-            'nama_file' => $namaAsli,
-        ]);
-
-        return back()->with('success', 'Dokumen ' . (DokumenPeserta::JENIS[$jenis] ?? $jenis) . ' berhasil diupload.');
+        return back()->with('success', $berhasilCount . ' dokumen berhasil disimpan.');
     }
 
     // Route: GET peserta/dokumen/{jenis}/lihat → peserta.dokumen.lihat
