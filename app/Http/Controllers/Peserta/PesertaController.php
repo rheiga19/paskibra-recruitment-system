@@ -263,15 +263,22 @@ class PesertaController extends Controller
 
         if (!in_array($pendaftaran->status, ['diverifikasi', 'lulus'])) {
             return redirect()->route('peserta.pendaftaran.show', $pendaftaran)
-                             ->with('error', 'Kartu hanya bisa dicetak setelah lolos administrasi.');
+                            ->with('error', 'Kartu hanya bisa dicetak setelah lolos administrasi.');
         }
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('peserta.pendaftaran.kartu_pdf', compact('pendaftaran'))
+        // Ambil foto dari DokumenPeserta via user_id
+        $fotoDok = \App\Models\DokumenPeserta::where('user_id', $pendaftaran->user_id)
+                    ->where('jenis', 'foto_4x6')
+                    ->first();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView(
+                'peserta.pendaftaran.kartu_pdf',
+                compact('pendaftaran', 'fotoDok')
+            )
             ->setPaper('a4', 'landscape');
 
         return $pdf->download('kartu-peserta-' . $pendaftaran->no_pendaftaran . '.pdf');
     }
-
 
     public function pendaftaranApply(Rekrutmen $rekrutmen)
     {
@@ -359,22 +366,22 @@ class PesertaController extends Controller
     }
 
     public function kartuAnggota()
-    {
-        $user        = auth()->user();
-        $rekrutmen   = Rekrutmen::where('is_aktif', true)->first();
+{
+    $user      = auth()->user();
+    $rekrutmen = Rekrutmen::where('is_aktif', true)->first();
 
-        $pendaftaran = Pendaftaran::with(['dokumen'])
-            ->where('user_id', $user->id)
-            ->where('is_lulus_final', true)
-            ->when($rekrutmen, fn($q) => $q->where('rekrutmen_id', $rekrutmen->id))
-            ->first();
+    $pendaftaran = Pendaftaran::where('user_id', $user->id)
+        ->where('is_lulus_final', true)
+        ->when($rekrutmen, fn($q) => $q->where('rekrutmen_id', $rekrutmen->id))
+        ->first();
 
-        if (!$pendaftaran) {
-            return back()->with('error', 'Kartu hanya tersedia untuk peserta yang lulus seleksi.');
-        }
-
-        return view('peserta.kartu-anggota', compact('pendaftaran', 'rekrutmen'));
+    if (!$pendaftaran) {
+        return back()->with('error', 'Kartu hanya tersedia untuk peserta yang lulus seleksi.');
     }
+
+    // Redirect ke pendaftaranKartu — sudah handle foto & QR dengan benar
+    return redirect()->route('peserta.pendaftaran.kartu', $pendaftaran);
+}
 
     public function absensiIndex()
     {

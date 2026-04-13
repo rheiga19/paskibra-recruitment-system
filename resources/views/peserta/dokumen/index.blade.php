@@ -9,7 +9,7 @@
         <div class="breadcrumb-item active">Dokumen</div>
     </div>
 </div>
-{{-- Banner peringatan sebelum mendaftar --}}
+
 @if(!$pendaftaranAktif)
 <div class="alert alert-info" style="border-left:4px solid #3abaf4;">
     <div class="d-flex align-items-start gap-3">
@@ -48,6 +48,10 @@ $dokList = [
 ];
 $uploaded = $dokumen->count();
 $total    = count($dokList);
+
+// Hitung dokumen yang belum ada (belum pernah diupload sebelumnya)
+$belumUpload = collect($dokList)->keys()->filter(fn($k) => !isset($dokumen[$k]))->values();
+$sisaWajib   = $belumUpload->count();
 @endphp
 
 {{-- Progress --}}
@@ -78,13 +82,18 @@ $total    = count($dokList);
 </div>
 @endif
 
+@if(!$pendaftaranAktif)
+<form action="{{ route('peserta.dokumen.upload') }}" method="POST" enctype="multipart/form-data" id="formDokumen">
+    @csrf
+@endif
+
 <div class="row">
     @foreach($dokList as $key => $info)
     @php
         $dok    = $dokumen[$key] ?? null;
         $isImg  = $dok ? preg_match('/\.(jpg|jpeg|png|webp)$/i', $dok->path) : false;
-        // URL aman lewat controller, bukan storage langsung
         $urlDok = $dok ? route('peserta.dokumen.lihat', $key) : null;
+        $sudahAda = !is_null($dok); // sudah pernah diupload sebelumnya
     @endphp
     <div class="col-12 col-md-6 mb-3">
         <div class="card h-100 {{ $dok ? 'border-success' : '' }}" style="{{ $dok ? 'border-width:2px;' : '' }}">
@@ -135,7 +144,8 @@ $total    = count($dokList);
                     </small>
                 </div>
                 @else
-                <div class="mb-3 text-center p-4 border rounded bg-light flex-grow-1 d-flex align-items-center justify-content-center flex-column">
+                <div class="mb-3 text-center p-3 border rounded bg-light flex-grow-1 d-flex align-items-center justify-content-center flex-column"
+                     id="preview_{{ $key }}">
                     <i class="fas fa-{{ $info['icon'] }} fa-3x text-muted mb-2"></i>
                     <small class="text-muted">Belum diupload</small>
                 </div>
@@ -145,38 +155,32 @@ $total    = count($dokList);
                     <i class="fas fa-info-circle mr-1"></i>{{ $info['sub'] }}
                 </p>
 
-                {{-- Upload / Ganti --}}
                 @if(!$pendaftaranAktif)
-                <form action="{{ route('peserta.dokumen.upload') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    <input type="hidden" name="jenis" value="{{ $key }}">
-                    <div class="input-group">
-                        <div class="custom-file">
-                            <input type="file" class="custom-file-input"
-                                   id="file_{{ $key }}" name="file"
-                                   accept="{{ $info['accept'] }}"
-                                   onchange="previewNama(this, '{{ $key }}')">
-                            <label class="custom-file-label" for="file_{{ $key }}" id="label_{{ $key }}">
-                                {{ $dok ? 'Ganti file...' : 'Pilih file...' }}
-                            </label>
-                        </div>
-                        <div class="input-group-append">
-                            <button type="submit" class="btn btn-{{ $dok ? 'warning' : 'primary' }}"
-                                    title="{{ $dok ? 'Ganti' : 'Upload' }}">
-                                <i class="fas fa-{{ $dok ? 'sync' : 'upload' }}"></i>
-                            </button>
-                        </div>
+                <div class="input-group">
+                    <div class="custom-file">
+                        <input type="file"
+                               class="custom-file-input dok-input"
+                               id="file_{{ $key }}"
+                               name="files[{{ $key }}]"
+                               accept="{{ $info['accept'] }}"
+                               data-key="{{ $key }}"
+                               data-sudah="{{ $sudahAda ? '1' : '0' }}"
+                               onchange="previewFile(this, '{{ $key }}')">
+                        <label class="custom-file-label" for="file_{{ $key }}" id="label_{{ $key }}">
+                            {{ $dok ? 'Ganti file...' : 'Pilih file...' }}
+                        </label>
                     </div>
-                    @error('file') <small class="text-danger d-block mt-1">{{ $message }}</small> @enderror
-                </form>
+                </div>
+                @error('files.'.$key)
+                <small class="text-danger d-block mt-1">{{ $message }}</small>
+                @enderror
 
-                {{-- Hapus --}}
                 @if($dok)
                 <form action="{{ route('peserta.dokumen.hapus', $key) }}" method="POST" class="mt-2"
                       onsubmit="return confirm('Hapus dokumen ini?')">
                     @csrf @method('DELETE')
                     <button type="submit" class="btn btn-sm btn-outline-danger btn-block">
-                        <i class="fas fa-trash mr-1"></i> Hapus Dokumen
+                        Hapus Dokumen
                     </button>
                 </form>
                 @endif
@@ -188,18 +192,99 @@ $total    = count($dokList);
     @endforeach
 </div>
 
+{{-- Tombol Simpan --}}
+@if(!$pendaftaranAktif)
+<div class="text-center mt-3 mb-2">
+    {{-- Pesan sisa dokumen yang belum dipilih --}}
+    <div id="infoSimpan" class="mb-2">
+        @if($sisaWajib > 0)
+        <small class="text-danger" id="pesanSisa">
+            Pilih file untuk <strong id="jumlahSisa">{{ $sisaWajib }}</strong> dokumen yang belum diupload untuk mengaktifkan tombol simpan.
+        </small>
+        @endif
+    </div>
+    <button type="submit" form="formDokumen"
+            class="btn btn-primary btn-lg px-5"
+            id="btnSimpan"
+            {{ $sisaWajib > 0 ? 'disabled' : '' }}>
+        Simpan Semua Dokumen
+    </button>
+</div>
+</form>
+@endif
+
 <div class="text-center mt-2 mb-4">
     <a href="{{ route('peserta.dashboard') }}" class="btn btn-secondary">
-        <i class="fas fa-arrow-left mr-1"></i> Kembali ke Dashboard
+        Kembali ke Dashboard
     </a>
 </div>
 @endsection
 
 @push('js')
 <script>
-function previewNama(input, key) {
+// Dokumen yang belum pernah diupload — wajib dipilih file baru
+const wajibDipilih = @json($belumUpload);
+const dipilih      = {}; // key => true/false
+
+function previewFile(input, key) {
     const label = document.getElementById('label_' + key);
-    if (input.files && input.files[0]) label.textContent = input.files[0].name;
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        label.textContent = file.name;
+
+        // Preview
+        const previewBox = document.getElementById('preview_' + key);
+        if (previewBox) {
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    previewBox.innerHTML = `<img src="${e.target.result}"
+                        class="img-fluid rounded border"
+                        style="max-height:160px;object-fit:cover;">`;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                previewBox.innerHTML = `
+                    <i class="fas fa-file-pdf fa-3x text-danger mb-2"></i>
+                    <small class="text-muted d-block mt-1">${file.name}</small>`;
+            }
+        }
+
+        // Tandai sudah dipilih
+        if (wajibDipilih.includes(key)) {
+            dipilih[key] = true;
+        }
+    } else {
+        if (wajibDipilih.includes(key)) {
+            dipilih[key] = false;
+        }
+    }
+
+    cekSimpan();
 }
+
+function cekSimpan() {
+    const btnSimpan  = document.getElementById('btnSimpan');
+    const pesanSisa  = document.getElementById('pesanSisa');
+    const jumlahSisa = document.getElementById('jumlahSisa');
+
+    // Hitung berapa dari wajibDipilih yang belum dipilih
+    const belumDipilih = wajibDipilih.filter(k => !dipilih[k]);
+    const sisa         = belumDipilih.length;
+
+    if (sisa === 0) {
+        btnSimpan.disabled = false;
+        if (pesanSisa) pesanSisa.style.display = 'none';
+    } else {
+        btnSimpan.disabled = true;
+        if (pesanSisa) {
+            pesanSisa.style.display = '';
+            jumlahSisa.textContent  = sisa;
+        }
+    }
+}
+
+// Jalankan saat load untuk kondisi awal
+cekSimpan();
 </script>
 @endpush

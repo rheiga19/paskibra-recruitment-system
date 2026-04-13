@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Kartu Calon Anggota Paskibra</title>
-<link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -346,11 +345,6 @@ body {
     {{-- ── KIRI ── --}}
     <div class="left">
         <div class="logo-wrap">
-            {{--
-                FIX LOGO: DomPDF tidak bisa load gambar via URL atau public_path biasa.
-                Harus pakai path absolut file:// atau embed base64.
-                Gunakan base64 agar paling reliable di semua environment.
-            --}}
             @php
                 $logoPath = public_path('images/logo.png');
                 $logoSrc  = '';
@@ -363,7 +357,6 @@ body {
             @if($logoSrc)
                 <img src="{{ $logoSrc }}" alt="Logo">
             @else
-                {{-- Fallback: teks jika logo tidak ditemukan --}}
                 <div style="color:#fff;font-size:7pt;text-align:center;font-weight:bold;">PASKIBRA</div>
             @endif
         </div>
@@ -420,12 +413,6 @@ body {
                 </div>
 
                 <div class="data-row">
-                    <div class="data-label">Kelas</div>
-                    <div class="data-sep">:</div>
-                    <div class="data-value">{{ $pendaftaran->kelas }}</div>
-                </div>
-
-                <div class="data-row">
                     <div class="data-label">Alamat</div>
                     <div class="data-sep">:</div>
                     <div class="data-value" style="font-size:8.5pt;">
@@ -457,8 +444,11 @@ body {
             <div class="foto-qr-wrap">
                 <div class="foto-box">
                     @php
-                        $fotoDok  = $pendaftaran->dokumen->firstWhere('jenis', 'foto_4x6');
-                        $fotoSrc  = '';
+                        $fotoSrc = '';
+                        // Ambil foto dari DokumenPeserta via user_id
+                        $fotoDok = \App\Models\DokumenPeserta::where('user_id', $pendaftaran->user_id)
+                                    ->where('jenis', 'foto_4x6')
+                                    ->first();
                         if ($fotoDok) {
                             $fotoPath = storage_path('app/public/' . $fotoDok->path);
                             if (file_exists($fotoPath)) {
@@ -475,12 +465,22 @@ body {
                     @endif
                 </div>
 
+                {{-- QR: di-fetch lalu di-embed base64 agar DomPDF bisa render --}}
                 @php
+                    $qrSrc  = '';
                     $qrData = 'PSK-' . $pendaftaran->no_pendaftaran . '|' . $pendaftaran->nama_lengkap;
                     $qrUrl  = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' . urlencode($qrData);
+                    try {
+                        $qrContent = @file_get_contents($qrUrl);
+                        if ($qrContent) {
+                            $qrSrc = 'data:image/png;base64,' . base64_encode($qrContent);
+                        }
+                    } catch (\Exception $e) {}
                 @endphp
                 <div class="qr-box">
-                    <img src="{{ $qrUrl }}" alt="QR">
+                    @if($qrSrc)
+                        <img src="{{ $qrSrc }}" alt="QR">
+                    @endif
                 </div>
                 <div class="qr-label">Scan untuk absensi</div>
             </div>
