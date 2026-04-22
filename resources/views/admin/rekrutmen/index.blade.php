@@ -35,8 +35,13 @@
             <table class="table table-striped mb-0">
                 <thead>
                     <tr>
-                        <th>Tahun</th><th>Nama</th><th>Periode</th>
-                        <th>Kuota</th><th>Pendaftar</th><th>Status</th><th>Aksi</th>
+                        <th>Tahun</th>
+                        <th>Nama</th>
+                        <th>Periode</th>
+                        <th>Kuota</th>
+                        <th>Pendaftar</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -44,34 +49,61 @@
                     <tr>
                         <td><strong>{{ $r->tahun }}</strong></td>
                         <td>{{ $r->nama }}</td>
-                        <td><small>{{ $r->tanggal_buka->format('d M Y') }}<br>s/d {{ $r->tanggal_tutup->format('d M Y') }}</small></td>
-                        <td><small>
-                            <i class="fas fa-male text-primary"></i> {{ $r->kuota_putra ?? '∞' }}
-                            &nbsp;
-                            <i class="fas fa-female text-danger"></i> {{ $r->kuota_putri ?? '∞' }}
-                        </small></td>
-                        <td><span class="badge badge-primary">{{ $r->pendaftaran_count }}</span></td>
-                        <td><span class="badge badge-{{ $r->is_aktif ? 'success' : 'secondary' }}">{{ $r->is_aktif ? 'Aktif' : 'Nonaktif' }}</span></td>
                         <td>
-                            <a href="{{ route('admin.rekrutmen.show', $r) }}" class="btn btn-sm btn-info btn-icon" title="Detail">
+                            <small>
+                                {{ $r->tanggal_buka->format('d M Y') }}<br>
+                                s/d {{ $r->tanggal_tutup->format('d M Y') }}
+                            </small>
+                        </td>
+                        <td>
+                            <small>
+                                <i class="fas fa-male text-primary"></i> {{ $r->kuota_putra ?? '∞' }}
+                                &nbsp;
+                                <i class="fas fa-female text-danger"></i> {{ $r->kuota_putri ?? '∞' }}
+                            </small>
+                        </td>
+                        <td>
+                            <span class="badge badge-primary">{{ $r->pendaftaran_count }}</span>
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ $r->is_aktif ? 'success' : 'secondary' }}">
+                                {{ $r->is_aktif ? 'Aktif' : 'Nonaktif' }}
+                            </span>
+                        </td>
+                        <td>
+                            {{-- Show --}}
+                            <a href="{{ route('admin.rekrutmen.show', $r) }}"
+                               class="btn btn-sm btn-info btn-icon" title="Detail">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="{{ route('admin.rekrutmen.edit', $r) }}" class="btn btn-sm btn-warning btn-icon" title="Edit">
+
+                            {{-- Edit --}}
+                            <a href="{{ route('admin.rekrutmen.edit', $r) }}"
+                               class="btn btn-sm btn-warning btn-icon" title="Edit">
                                 <i class="fas fa-edit"></i>
                             </a>
+
+                            {{-- Toggle Aktif — FIX: route name adalah rekrutmen.toggle --}}
                             <form action="{{ route('admin.rekrutmen.toggle', $r) }}" method="POST" class="d-inline">
-                                @csrf @method('PATCH')
-                                <button class="btn btn-sm btn-{{ $r->is_aktif ? 'secondary' : 'success' }} btn-icon"
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit"
+                                        class="btn btn-sm btn-{{ $r->is_aktif ? 'secondary' : 'success' }} btn-icon"
                                         onclick="return confirm('Ubah status rekrutmen ini?')"
                                         title="{{ $r->is_aktif ? 'Nonaktifkan' : 'Aktifkan' }}">
                                     <i class="fas fa-power-off"></i>
                                 </button>
                             </form>
+
+                            {{-- Delete --}}
                             <form action="{{ route('admin.rekrutmen.destroy', $r) }}" method="POST" class="d-inline">
-                                @csrf @method('DELETE')
-                                <button class="btn btn-sm btn-danger btn-icon"
-                                        onclick="return confirm('Hapus rekrutmen \'{{ addslashes($r->nama) }}\'? Tindakan ini tidak bisa dibatalkan.')"
-                                        title="Hapus">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit"
+                                        class="btn btn-sm btn-danger btn-icon"
+                                        onclick="return confirm('Hapus rekrutmen \'{{ addslashes($r->nama) }}\'?\nTindakan ini tidak bisa dibatalkan.')"
+                                        title="Hapus"
+                                        {{ $r->pendaftaran_count > 0 ? 'disabled' : '' }}>
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </form>

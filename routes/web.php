@@ -33,11 +33,12 @@ Route::middleware(['auth', 'role:admin'])
     Route::get('dashboard', [\App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])
         ->name('dashboard');
 
-    // ── Rekrutmen ──
-    Route::resource('rekrutmen', \App\Http\Controllers\Admin\RekrutmenController::class);
-    Route::patch('rekrutmen/{rekrutmen}/toggle', [\App\Http\Controllers\Admin\RekrutmenController::class, 'toggleAktif'])
-        ->name('rekrutmen.toggle');
+   // ── Rekrutmen ──
+Route::resource('rekrutmen', \App\Http\Controllers\Admin\RekrutmenController::class)
+     ->parameters(['rekrutmen' => 'rekrutmen']);  // ← tambah ini
 
+Route::patch('rekrutmen/{rekrutmen}/toggle', [\App\Http\Controllers\Admin\RekrutmenController::class, 'toggleAktif'])
+    ->name('rekrutmen.toggle');
     // ── Pendaftaran ──
     // PENTING: route statis harus di atas route dinamis {pendaftaran}
     Route::get('pendaftaran/download-semua-zip',
@@ -185,15 +186,21 @@ Route::middleware(['auth', 'role:peserta'])
         ->name('profil.update');
  
     // ── Dokumen ──
-    Route::get   ('dokumen',               [\App\Http\Controllers\Peserta\DokumenController::class, 'index'])
-        ->name('dokumen.index');
-    Route::post  ('dokumen/upload',        [\App\Http\Controllers\Peserta\DokumenController::class, 'upload'])
-        ->name('dokumen.upload');
-    Route::get   ('dokumen/{jenis}/lihat', [\App\Http\Controllers\Peserta\DokumenController::class, 'lihat'])
-        ->name('dokumen.lihat');
-    Route::delete('dokumen/{jenis}',       [\App\Http\Controllers\Peserta\DokumenController::class, 'hapus'])
-        ->name('dokumen.hapus');
- 
+    // ── Dokumen ──
+Route::get   ('dokumen',               [\App\Http\Controllers\Peserta\DokumenController::class, 'index'])
+    ->name('dokumen.index');
+
+// ← TAMBAH BARIS INI
+Route::post  ('dokumen/upload-semua',  [\App\Http\Controllers\Peserta\DokumenController::class, 'uploadSemua'])
+    ->name('dokumen.uploadSemua');
+
+Route::post  ('dokumen/upload',        [\App\Http\Controllers\Peserta\DokumenController::class, 'upload'])
+    ->name('dokumen.upload');
+Route::get   ('dokumen/{jenis}/lihat', [\App\Http\Controllers\Peserta\DokumenController::class, 'lihat'])
+    ->name('dokumen.lihat');
+Route::delete('dokumen/{jenis}',       [\App\Http\Controllers\Peserta\DokumenController::class, 'hapus'])
+    ->name('dokumen.hapus');
+    
     // ── Pendaftaran ──
     // PENTING: route statis di atas route dinamis {pendaftaran}
     Route::post('pendaftaran/{rekrutmen}/apply',  [\App\Http\Controllers\Peserta\PendaftaranController::class, 'apply'])

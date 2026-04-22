@@ -17,6 +17,9 @@ class DokumenController extends Controller
         'rapor', 'surat_sehat', 'surat_izin_ortu',
     ];
 
+    // Ekstensi yang diizinkan
+    private const ALLOWED_MIMES = ['jpg', 'jpeg', 'png', 'pdf'];
+
     public function index()
     {
         $user             = auth()->user();
@@ -34,19 +37,12 @@ class DokumenController extends Controller
         return view('peserta.dokumen.index', compact('dokumen', 'pendaftaranAktif'));
     }
 
-    // KEAMANAN: file disimpan di storage/app/private/dokumen (bukan public)
-    // Akses file hanya lewat route peserta.dokumen.lihat yang cek auth
-    public function upload(Request $request)
+    // ── Upload semua dokumen sekaligus (1 tombol simpan) ───────────────
+    public function uploadSemua(Request $request)
     {
-        $request->validate([
-            'jenis' => ['required', 'in:' . implode(',', self::JENIS_LIST)],
-            'file'  => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
-        ]);
+        $user = auth()->user();
 
-        $user  = auth()->user();
-        $jenis = $request->jenis;
-
-        // Dokumen dikunci setelah mendaftar
+        // Cek dokumen dikunci setelah mendaftar
         $rekrutmenAktif = Rekrutmen::where('is_aktif', true)->latest()->first();
         if ($rekrutmenAktif) {
             $sudahDaftar = Pendaftaran::where('user_id', $user->id)
@@ -57,7 +53,91 @@ class DokumenController extends Controller
             }
         }
 
-        // Hapus file lama jika ada
+        // Validasi — semua field nullable (hanya validasi kalau ada file yang dikirim)
+        $rules = [];
+        foreach (self::JENIS_LIST as $jenis) {
+            $rules["dokumen.$jenis"] = [
+                'nullable',
+                'file',
+                'mimes:jpg,jpeg,png,pdf',
+                'max:2048',
+            ];
+        }
+
+        $request->validate($rules, [
+            'dokumen.*.mimes' => 'File :attribute hanya boleh berformat JPG, PNG, atau PDF.',
+            'dokumen.*.max'   => 'Ukuran file :attribute maksimal 2MB.',
+        ]);
+
+        // Tolak ekstensi berbahaya secara eksplisit (double check)
+        $blockedExtensions = ['doc', 'docx', 'mp4', 'mp3', 'avi', 'mkv', 'exe', 'zip', 'rar', 'xls', 'xlsx', 'ppt', 'pptx'];
+        foreach (self::JENIS_LIST as $jenis) {
+            if ($request->hasFile("dokumen.$jenis")) {
+                $ext = strtolower($request->file("dokumen.$jenis")->getClientOriginalExtension());
+                if (in_array($ext, $blockedExtensions)) {
+                    return back()->with('error', "File untuk '$jenis' tidak diizinkan. Hanya JPG, PNG, dan PDF yang diterima.");
+                }
+            }
+        }
+
+        $berhasilCount = 0;
+        $folder = 'dokumen/' . $user->id . '_' . Str::slug($user->name);
+
+        foreach (self::JENIS_LIST as $jenis) {
+            if (!$request->hasFile("dokumen.$jenis")) continue;
+
+            $file = $request->file("dokumen.$jenis");
+            $ext  = strtolower($file->getClientOriginalExtension());
+
+            // Hapus file lama jika ada
+            $lama = DokumenPeserta::where('user_id', $user->id)->where('jenis', $jenis)->first();
+            if ($lama) {
+                Storage::disk('local')->delete($lama->path);
+                $lama->delete();
+            }
+
+            $namaAsli = $file->getClientOriginalName();
+            $namaFile = $jenis . '.' . $ext;
+            $path     = $file->storeAs($folder, $namaFile, 'local');
+
+            DokumenPeserta::create([
+                'user_id'   => $user->id,
+                'jenis'     => $jenis,
+                'path'      => $path,
+                'nama_file' => $namaAsli,
+            ]);
+
+            $berhasilCount++;
+        }
+
+        if ($berhasilCount === 0) {
+            return back()->with('error', 'Tidak ada file yang dipilih.');
+        }
+
+        return back()->with('success', $berhasilCount . ' dokumen berhasil disimpan.');
+    }
+
+    // ── Upload per-dokumen (tetap dipertahankan untuk kompatibilitas) ──
+    public function upload(Request $request)
+    {
+        $request->validate([
+            'jenis' => ['required', 'in:' . implode(',', self::JENIS_LIST)],
+            'file'  => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
+        ]);
+
+        $user  = auth()->user();
+        $jenis = $request->jenis;
+
+        $rekrutmenAktif = Rekrutmen::where('is_aktif', true)->latest()->first();
+        if ($rekrutmenAktif) {
+            $sudahDaftar = Pendaftaran::where('user_id', $user->id)
+                ->where('rekrutmen_id', $rekrutmenAktif->id)
+                ->exists();
+            if ($sudahDaftar) {
+                return back()->with('error', 'Dokumen tidak bisa diubah setelah mendaftar.');
+            }
+        }
+
         $lama = DokumenPeserta::where('user_id', $user->id)->where('jenis', $jenis)->first();
         if ($lama) {
             Storage::disk('local')->delete($lama->path);
@@ -68,9 +148,7 @@ class DokumenController extends Controller
         $ext      = strtolower($request->file('file')->getClientOriginalExtension());
         $folder   = 'dokumen/' . $user->id . '_' . Str::slug($user->name);
         $namaFile = $jenis . '.' . $ext;
-
-        // Simpan ke storage/app/private (disk: local) — tidak bisa diakses via URL langsung
-        $path = $request->file('file')->storeAs($folder, $namaFile, 'local');
+        $path     = $request->file('file')->storeAs($folder, $namaFile, 'local');
 
         DokumenPeserta::create([
             'user_id'   => $user->id,
@@ -82,7 +160,6 @@ class DokumenController extends Controller
         return back()->with('success', 'Dokumen ' . (DokumenPeserta::JENIS[$jenis] ?? $jenis) . ' berhasil diupload.');
     }
 
-    // Route: GET peserta/dokumen/{jenis}/lihat → peserta.dokumen.lihat
     public function lihat(string $jenis)
     {
         abort_unless(in_array($jenis, self::JENIS_LIST), 422);
@@ -98,8 +175,6 @@ class DokumenController extends Controller
             ->header('Content-Disposition', 'inline; filename="' . $dok->nama_file . '"');
     }
 
-    // Route: GET admin/dokumen/{dokumenPeserta}/lihat → admin.dokumen.lihat
-    //        GET panitia/dokumen/{dokumenPeserta}/lihat → panitia.dokumen.lihat
     public function lihatAdmin(DokumenPeserta $dokumenPeserta)
     {
         abort_unless(
