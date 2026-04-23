@@ -42,9 +42,7 @@
 @php
 $dokList = [
 'foto_4x6'        => ['label'=>'Pas Foto 4x6','sub'=>'Background merah, JPG max 1MB','icon'=>'camera','accept'=>'.jpg,.jpeg,.png'],
-'ktp_pelajar'     => ['label'=>'Kartu Pelajar / KTP','sub'=>'JPG PNG PDF max 2MB','icon'=>'id-card','accept'=>'.jpg,.jpeg,.png,.pdf'],
-'akta_kelahiran'  => ['label'=>'Akta Kelahiran','sub'=>'JPG PNG PDF max 2MB','icon'=>'file-alt','accept'=>'.jpg,.jpeg,.png,.pdf'],
-'rapor'           => ['label'=>'Rapor Semester Terakhir','sub'=>'JPG PNG PDF max 2MB','icon'=>'book','accept'=>'.jpg,.jpeg,.png,.pdf'],
+'sertifikat'      => ['label'=>'Sertifikat Prestasi','sub'=>'JPG PNG PDF max 2MB','icon'=>'trophy','accept'=>'.jpg,.jpeg,.png,.pdf'],
 'surat_sehat'     => ['label'=>'Surat Keterangan Sehat','sub'=>'JPG PNG PDF max 2MB','icon'=>'heartbeat','accept'=>'.jpg,.jpeg,.png,.pdf'],
 'surat_izin_ortu' => ['label'=>'Surat Izin Orang Tua','sub'=>'JPG PNG PDF max 2MB','icon'=>'file-signature','accept'=>'.jpg,.jpeg,.png,.pdf'],
 ];

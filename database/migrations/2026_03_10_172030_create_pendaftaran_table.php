@@ -32,9 +32,9 @@ return new class extends Migration
             $table->integer('berat_badan');
             // Snapshot data sekolah saat apply
             $table->string('nama_sekolah');
-            $table->enum('jenjang', ['SMP','MTs','SMA','MA','SMK']);
+            $table->enum('jenjang', ['SMA','MA','SMK']);
             $table->string('kelas');
-            $table->decimal('nilai_rata', 5, 2);
+            
             $table->string('nama_ortu');
             $table->string('hp_ortu');
             $table->enum('hubungan_ortu', ['Ayah','Ibu','Wali']);

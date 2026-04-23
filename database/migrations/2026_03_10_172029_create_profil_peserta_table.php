@@ -35,9 +35,8 @@ return new class extends Migration
             $table->integer('berat_badan')->nullable();
             // Data Sekolah
             $table->string('nama_sekolah')->nullable();
-            $table->enum('jenjang', ['SMP','MTs','SMA','MA','SMK'])->nullable();
+            $table->enum('jenjang', ['SMA','MA','SMK'])->nullable();
             $table->string('kelas')->nullable();
-            $table->decimal('nilai_rata', 5, 2)->nullable();
             // Data Ortu
             $table->string('nama_ortu')->nullable();
             $table->string('hp_ortu')->nullable();

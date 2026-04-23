@@ -13,11 +13,9 @@ use Illuminate\Support\Str;
 class DokumenController extends Controller
 {
     private const JENIS_LIST = [
-        'foto_4x6', 'ktp_pelajar', 'akta_kelahiran',
-        'rapor', 'surat_sehat', 'surat_izin_ortu',
+        'foto_4x6', 'sertifikat', 'surat_sehat', 'surat_izin_ortu',
     ];
 
-    // Ekstensi yang diizinkan
     private const ALLOWED_MIMES = ['jpg', 'jpeg', 'png', 'pdf'];
 
     public function index()
@@ -37,87 +35,63 @@ class DokumenController extends Controller
         return view('peserta.dokumen.index', compact('dokumen', 'pendaftaranAktif'));
     }
 
-    // ── Upload semua dokumen sekaligus (1 tombol simpan) ───────────────
     public function uploadSemua(Request $request)
     {
         $user = auth()->user();
 
-        // Cek dokumen dikunci setelah mendaftar
         $rekrutmenAktif = Rekrutmen::where('is_aktif', true)->latest()->first();
         if ($rekrutmenAktif) {
             $sudahDaftar = Pendaftaran::where('user_id', $user->id)
-                ->where('rekrutmen_id', $rekrutmenAktif->id)
-                ->exists();
+                ->where('rekrutmen_id', $rekrutmenAktif->id)->exists();
             if ($sudahDaftar) {
                 return back()->with('error', 'Dokumen tidak bisa diubah setelah mendaftar.');
             }
         }
 
-        // Validasi — semua field nullable (hanya validasi kalau ada file yang dikirim)
         $rules = [];
         foreach (self::JENIS_LIST as $jenis) {
-            $rules["dokumen.$jenis"] = [
-                'nullable',
-                'file',
-                'mimes:jpg,jpeg,png,pdf',
-                'max:2048',
-            ];
+            $rules["dokumen.$jenis"] = ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'];
         }
-
         $request->validate($rules, [
             'dokumen.*.mimes' => 'File :attribute hanya boleh berformat JPG, PNG, atau PDF.',
             'dokumen.*.max'   => 'Ukuran file :attribute maksimal 2MB.',
         ]);
 
-        // Tolak ekstensi berbahaya secara eksplisit (double check)
-        $blockedExtensions = ['doc', 'docx', 'mp4', 'mp3', 'avi', 'mkv', 'exe', 'zip', 'rar', 'xls', 'xlsx', 'ppt', 'pptx'];
+        $blocked = ['doc','docx','mp4','mp3','avi','mkv','exe','zip','rar','xls','xlsx','ppt','pptx'];
         foreach (self::JENIS_LIST as $jenis) {
             if ($request->hasFile("dokumen.$jenis")) {
                 $ext = strtolower($request->file("dokumen.$jenis")->getClientOriginalExtension());
-                if (in_array($ext, $blockedExtensions)) {
-                    return back()->with('error', "File untuk '$jenis' tidak diizinkan. Hanya JPG, PNG, dan PDF yang diterima.");
+                if (in_array($ext, $blocked)) {
+                    return back()->with('error', "File '$jenis' tidak diizinkan. Hanya JPG, PNG, dan PDF.");
                 }
             }
         }
 
-        $berhasilCount = 0;
+        $count  = 0;
         $folder = 'dokumen/' . $user->id . '_' . Str::slug($user->name);
 
         foreach (self::JENIS_LIST as $jenis) {
             if (!$request->hasFile("dokumen.$jenis")) continue;
-
             $file = $request->file("dokumen.$jenis");
             $ext  = strtolower($file->getClientOriginalExtension());
 
-            // Hapus file lama jika ada
             $lama = DokumenPeserta::where('user_id', $user->id)->where('jenis', $jenis)->first();
-            if ($lama) {
-                Storage::disk('local')->delete($lama->path);
-                $lama->delete();
-            }
+            if ($lama) { $this->deleteFile($lama->path); $lama->delete(); }
 
-            $namaAsli = $file->getClientOriginalName();
-            $namaFile = $jenis . '.' . $ext;
-            $path     = $file->storeAs($folder, $namaFile, 'local');
-
+            $path = $file->storeAs($folder, $jenis . '.' . $ext, 'local');
             DokumenPeserta::create([
                 'user_id'   => $user->id,
                 'jenis'     => $jenis,
                 'path'      => $path,
-                'nama_file' => $namaAsli,
+                'nama_file' => $file->getClientOriginalName(),
             ]);
-
-            $berhasilCount++;
+            $count++;
         }
 
-        if ($berhasilCount === 0) {
-            return back()->with('error', 'Tidak ada file yang dipilih.');
-        }
-
-        return back()->with('success', $berhasilCount . ' dokumen berhasil disimpan.');
+        if ($count === 0) return back()->with('error', 'Tidak ada file yang dipilih.');
+        return back()->with('success', $count . ' dokumen berhasil disimpan.');
     }
 
-    // ── Upload per-dokumen (tetap dipertahankan untuk kompatibilitas) ──
     public function upload(Request $request)
     {
         $request->validate([
@@ -131,60 +105,42 @@ class DokumenController extends Controller
         $rekrutmenAktif = Rekrutmen::where('is_aktif', true)->latest()->first();
         if ($rekrutmenAktif) {
             $sudahDaftar = Pendaftaran::where('user_id', $user->id)
-                ->where('rekrutmen_id', $rekrutmenAktif->id)
-                ->exists();
-            if ($sudahDaftar) {
-                return back()->with('error', 'Dokumen tidak bisa diubah setelah mendaftar.');
-            }
+                ->where('rekrutmen_id', $rekrutmenAktif->id)->exists();
+            if ($sudahDaftar) return back()->with('error', 'Dokumen tidak bisa diubah setelah mendaftar.');
         }
 
         $lama = DokumenPeserta::where('user_id', $user->id)->where('jenis', $jenis)->first();
-        if ($lama) {
-            Storage::disk('local')->delete($lama->path);
-            $lama->delete();
-        }
+        if ($lama) { $this->deleteFile($lama->path); $lama->delete(); }
 
-        $namaAsli = $request->file('file')->getClientOriginalName();
-        $ext      = strtolower($request->file('file')->getClientOriginalExtension());
-        $folder   = 'dokumen/' . $user->id . '_' . Str::slug($user->name);
-        $namaFile = $jenis . '.' . $ext;
-        $path     = $request->file('file')->storeAs($folder, $namaFile, 'local');
+        $ext    = strtolower($request->file('file')->getClientOriginalExtension());
+        $folder = 'dokumen/' . $user->id . '_' . Str::slug($user->name);
+        $path   = $request->file('file')->storeAs($folder, $jenis . '.' . $ext, 'local');
 
         DokumenPeserta::create([
             'user_id'   => $user->id,
             'jenis'     => $jenis,
             'path'      => $path,
-            'nama_file' => $namaAsli,
+            'nama_file' => $request->file('file')->getClientOriginalName(),
         ]);
 
-        return back()->with('success', 'Dokumen ' . (DokumenPeserta::JENIS[$jenis] ?? $jenis) . ' berhasil diupload.');
+        return back()->with('success', 'Dokumen berhasil diupload.');
     }
 
     public function lihat(string $jenis)
     {
         abort_unless(in_array($jenis, self::JENIS_LIST), 422);
-
-        $dok = DokumenPeserta::where('user_id', auth()->id())
-                             ->where('jenis', $jenis)
-                             ->firstOrFail();
-
-        [$disk, $file, $mime] = $this->resolveFile($dok->path, $dok->nama_file);
-
-        return response($file, 200)
+        $dok = DokumenPeserta::where('user_id', auth()->id())->where('jenis', $jenis)->firstOrFail();
+        [$content, $mime] = $this->readFile($dok->path);
+        return response($content, 200)
             ->header('Content-Type', $mime)
             ->header('Content-Disposition', 'inline; filename="' . $dok->nama_file . '"');
     }
 
     public function lihatAdmin(DokumenPeserta $dokumenPeserta)
     {
-        abort_unless(
-            auth()->user()->isAdmin() || auth()->user()->isPanitia(),
-            403
-        );
-
-        [$disk, $file, $mime] = $this->resolveFile($dokumenPeserta->path, $dokumenPeserta->nama_file);
-
-        return response($file, 200)
+        abort_unless(auth()->user()->isAdmin() || auth()->user()->isPanitia(), 403);
+        [$content, $mime] = $this->readFile($dokumenPeserta->path);
+        return response($content, 200)
             ->header('Content-Type', $mime)
             ->header('Content-Disposition', 'inline; filename="' . $dokumenPeserta->nama_file . '"');
     }
@@ -192,22 +148,18 @@ class DokumenController extends Controller
     public function hapus(Request $request, string $jenis)
     {
         abort_unless(in_array($jenis, self::JENIS_LIST), 422);
-
         $user = auth()->user();
 
         $rekrutmenAktif = Rekrutmen::where('is_aktif', true)->latest()->first();
         if ($rekrutmenAktif) {
             $sudahDaftar = Pendaftaran::where('user_id', $user->id)
-                ->where('rekrutmen_id', $rekrutmenAktif->id)
-                ->exists();
-            if ($sudahDaftar) {
-                return back()->with('error', 'Dokumen tidak bisa dihapus setelah mendaftar.');
-            }
+                ->where('rekrutmen_id', $rekrutmenAktif->id)->exists();
+            if ($sudahDaftar) return back()->with('error', 'Dokumen tidak bisa dihapus setelah mendaftar.');
         }
 
         $dok = DokumenPeserta::where('user_id', $user->id)->where('jenis', $jenis)->first();
         if ($dok) {
-            Storage::disk('local')->delete($dok->path);
+            $this->deleteFile($dok->path);
             $dok->delete();
             return back()->with('success', 'Dokumen berhasil dihapus.');
         }
@@ -215,16 +167,34 @@ class DokumenController extends Controller
         return back()->with('error', 'Dokumen tidak ditemukan.');
     }
 
-    private function resolveFile(string $path, string $namaFile): array
+    // ── Helper: baca file — cek storage/app/private dulu ─────────────
+    private function readFile(string $path): array
     {
-        if (Storage::disk('local')->exists($path)) {
-            return ['local', Storage::disk('local')->get($path), Storage::disk('local')->mimeType($path)];
+        // Laravel 11: local disk → storage/app/private
+        $privateFull = storage_path('app/private/' . $path);
+        if (file_exists($privateFull)) {
+            return [file_get_contents($privateFull), mime_content_type($privateFull)];
         }
 
+        // Fallback: storage/app
+        if (Storage::disk('local')->exists($path)) {
+            return [Storage::disk('local')->get($path), Storage::disk('local')->mimeType($path)];
+        }
+
+        // Fallback: storage/app/public
         if (Storage::disk('public')->exists($path)) {
-            return ['public', Storage::disk('public')->get($path), Storage::disk('public')->mimeType($path)];
+            return [Storage::disk('public')->get($path), Storage::disk('public')->mimeType($path)];
         }
 
         abort(404, 'File dokumen tidak ditemukan.');
+    }
+
+    // ── Helper: hapus file — cek storage/app/private dulu ────────────
+    private function deleteFile(string $path): void
+    {
+        $privateFull = storage_path('app/private/' . $path);
+        if (file_exists($privateFull)) { unlink($privateFull); return; }
+        if (Storage::disk('local')->exists($path)) { Storage::disk('local')->delete($path); return; }
+        if (Storage::disk('public')->exists($path)) { Storage::disk('public')->delete($path); }
     }
 }

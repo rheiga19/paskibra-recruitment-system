@@ -28,9 +28,7 @@ class PendaftaranController extends Controller
 
         $jenisList = [
             'foto_4x6'        => 'Foto 4x6',
-            'ktp_pelajar'     => 'KTP/Kartu Pelajar',
-            'akta_kelahiran'  => 'Akta Kelahiran',
-            'rapor'           => 'Rapor',
+            'sertifikat'      => 'Sertifikat',
             'surat_sehat'     => 'Surat Keterangan Sehat',
             'surat_izin_ortu' => 'Surat Izin Orang Tua',
         ];
@@ -99,7 +97,6 @@ class PendaftaranController extends Controller
             'nama_sekolah'   => $profil->nama_sekolah,
             'jenjang'        => $profil->jenjang,
             'kelas'          => $profil->kelas,
-            'nilai_rata'     => $profil->nilai_rata,
             'nama_ortu'      => $profil->nama_ortu,
             'hp_ortu'        => $profil->hp_ortu,
             'hubungan_ortu'  => $profil->hubungan_ortu,
@@ -132,7 +129,6 @@ class PendaftaranController extends Controller
             && !empty($profil->nama_sekolah)
             && !empty($profil->jenjang)
             && !empty($profil->kelas)
-            && !empty($profil->nilai_rata)
             && !empty($profil->tinggi_badan)
             && !empty($profil->berat_badan)
             && !empty($profil->nama_ortu)
@@ -145,9 +141,7 @@ class PendaftaranController extends Controller
         $uploaded = DokumenPeserta::where('user_id', $userId)->pluck('jenis')->toArray();
         return [
             'foto_4x6'        => in_array('foto_4x6',        $uploaded),
-            'ktp_pelajar'     => in_array('ktp_pelajar',     $uploaded),
-            'akta_kelahiran'  => in_array('akta_kelahiran',  $uploaded),
-            'rapor'           => in_array('rapor',           $uploaded),
+            'sertifikat'      => in_array('sertifikat',      $uploaded),
             'surat_sehat'     => in_array('surat_sehat',     $uploaded),
             'surat_izin_ortu' => in_array('surat_izin_ortu', $uploaded),
         ];

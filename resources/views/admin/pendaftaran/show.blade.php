@@ -72,7 +72,6 @@ $dokumenMap = $pendaftaran->dokumen
                     <tr><td class="text-muted pl-3">TB / BB</td><td>{{ $pendaftaran->tinggi_badan }} cm / {{ $pendaftaran->berat_badan }} kg</td></tr>
                     <tr><td class="text-muted pl-3">Sekolah</td><td>{{ $pendaftaran->nama_sekolah }}</td></tr>
                     <tr><td class="text-muted pl-3">Jenjang</td><td>{{ $pendaftaran->jenjang }} Kelas {{ $pendaftaran->kelas }}</td></tr>
-                    <tr><td class="text-muted pl-3">Nilai Rata</td><td>{{ $pendaftaran->nilai_rata ?? '-' }}</td></tr>
                     <tr>
                         <td class="text-muted pl-3">Orang Tua</td>
                         <td>{{ $pendaftaran->nama_ortu }} ({{ $pendaftaran->hubungan_ortu }})

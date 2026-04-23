@@ -66,6 +66,7 @@
                         <select name="role" class="form-control @error('role') is-invalid @enderror" required>
                             <option value="">-- Pilih Role --</option>
                             <option value="admin"   {{ old('role', $user->role ?? '') === 'admin'   ? 'selected' : '' }}>Admin</option>
+                            <option value="panitia"   {{ old('role', $user->role ?? '') === 'panitia'   ? 'selected' : '' }}>Panitia</option>
                             <option value="peserta" {{ old('role', $user->role ?? '') === 'peserta' ? 'selected' : '' }}>Peserta</option>
                         </select>
                         @error('role')

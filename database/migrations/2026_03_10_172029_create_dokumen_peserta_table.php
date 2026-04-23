@@ -16,9 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->enum('jenis', [
                 'foto_4x6',
-                'ktp_pelajar',
-                'akta_kelahiran',
-                'rapor',
+                'sertifikat',
                 'surat_sehat',
                 'surat_izin_ortu'
             ]);

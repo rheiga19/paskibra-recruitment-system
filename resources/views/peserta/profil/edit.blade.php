@@ -231,22 +231,11 @@
                             class="form-control @error('kelas') is-invalid @enderror"
                             {{ $sudahMendaftar ? 'disabled' : 'required' }}>
                         <option value="">Pilih...</option>
-                        @foreach(['X','XI','XII'] as $k)
+                        @foreach(['X'] as $k)
                         <option value="{{ $k }}" {{ old('kelas', $profil->kelas) == $k ? 'selected' : '' }}>{{ $k }}</option>
                         @endforeach
                     </select>
                     @error('kelas')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="form-group">
-                    <label>Nilai Rata-rata Rapor <span class="text-danger">*</span></label>
-                    <input type="number" name="nilai_rata"
-                           class="form-control @error('nilai_rata') is-invalid @enderror"
-                           value="{{ old('nilai_rata', $profil->nilai_rata) }}"
-                           min="0" max="100" step="0.01"
-                           {{ $sudahMendaftar ? 'disabled' : 'required' }}>
-                    @error('nilai_rata')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
             </div>
         </div>

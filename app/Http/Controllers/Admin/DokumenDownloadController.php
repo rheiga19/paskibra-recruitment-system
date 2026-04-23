@@ -16,25 +16,21 @@ class DokumenDownloadController extends Controller
         $dokumen = DokumenPeserta::where('user_id', $pendaftaran->user_id)->get();
         abort_if($dokumen->isEmpty(), 404, 'Dokumen tidak ditemukan.');
 
-        // Bersihkan nama file dari karakter berbahaya
         $namaAman = preg_replace('/[^A-Za-z0-9_\-]/', '_', $pendaftaran->no_pendaftaran . '_' . $pendaftaran->nama_lengkap);
         $namaZip  = 'dokumen_' . $namaAman . '.zip';
 
-        // Gunakan storage_path dengan DIRECTORY_SEPARATOR yang benar
         $tmpDir  = storage_path('app' . DIRECTORY_SEPARATOR . 'tmp');
         $tmpPath = $tmpDir . DIRECTORY_SEPARATOR . $namaZip;
 
-        // Buat folder tmp jika belum ada
         if (!is_dir($tmpDir)) {
             mkdir($tmpDir, 0755, true);
         }
 
-        // Hapus ZIP lama jika ada (mencegah konflik)
         if (file_exists($tmpPath)) {
             unlink($tmpPath);
         }
 
-        $zip = new ZipArchive();
+        $zip    = new ZipArchive();
         $result = $zip->open($tmpPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
         abort_unless($result === true, 500, 'Gagal membuat ZIP. Error: ' . $result);
 
@@ -77,7 +73,7 @@ class DokumenDownloadController extends Controller
             unlink($tmpPath);
         }
 
-        $zip = new ZipArchive();
+        $zip    = new ZipArchive();
         $result = $zip->open($tmpPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
         abort_unless($result === true, 500, 'Gagal membuat ZIP. Error: ' . $result);
 
@@ -103,14 +99,22 @@ class DokumenDownloadController extends Controller
         return response()->download($tmpPath, $namaZip)->deleteFileAfterSend(true);
     }
 
-    
+    // ── Resolve path file — cek semua kemungkinan lokasi ───────────────
     private function resolveFilePath(string $path): ?string
     {
+        // Laravel 11: local disk default → storage/app/private
+        $privatePath = storage_path('app' . DIRECTORY_SEPARATOR . 'private' . DIRECTORY_SEPARATOR . $path);
+        if (file_exists($privatePath)) {
+            return $privatePath;
+        }
+
+        // Fallback: storage/app (Laravel 10 ke bawah)
         $localPath = storage_path('app' . DIRECTORY_SEPARATOR . $path);
         if (file_exists($localPath)) {
             return $localPath;
         }
 
+        // Fallback: storage/app/public
         $publicPath = storage_path('app' . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $path);
         if (file_exists($publicPath)) {
             return $publicPath;

@@ -27,14 +27,6 @@
 
         {{-- Password --}}
         <div class="form-group">
-            <div class="d-flex justify-content-between align-items-center">
-                <label for="password">Password</label>
-                @if (Route::has('password.request'))
-                    <a href="{{ route('password.request') }}" class="text-small text-muted">
-                        Lupa password?
-                    </a>
-                @endif
-            </div>
             <div class="input-group">
                 <input id="password"
                        type="password"

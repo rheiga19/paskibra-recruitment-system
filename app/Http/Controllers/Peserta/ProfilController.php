@@ -27,7 +27,6 @@ class ProfilController extends Controller
             'nama_sekolah'   => ['required', 'string', 'max:100'],
             'jenjang'        => ['required', 'in:SMP,MTs,SMA,MA,SMK'],
             'kelas'          => ['required', 'in:VII,VIII,IX,X,XI,XII'],
-            'nilai_rata'     => ['required', 'numeric', 'min:0', 'max:100'],
             'tinggi_badan'   => ['required', 'integer', 'min:100', 'max:250'],
             'berat_badan'    => ['required', 'integer', 'min:20',  'max:200'],
             'golongan_darah' => ['nullable', 'in:A,B,AB,O'],
@@ -44,7 +43,7 @@ class ProfilController extends Controller
             $request->only([
                 'nik', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir',
                 'no_hp', 'alamat_lengkap', 'nama_sekolah', 'jenjang', 'kelas',
-                'nilai_rata', 'tinggi_badan', 'berat_badan', 'golongan_darah',
+                'tinggi_badan', 'berat_badan', 'golongan_darah',
                 'nama_ortu', 'hp_ortu', 'hubungan_ortu', 'prestasi',
             ])
         );

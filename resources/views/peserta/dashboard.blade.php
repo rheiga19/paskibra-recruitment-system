@@ -53,7 +53,7 @@
                     <h4>Dokumen</h4>
                 </div>
                 <div class="card-body">
-                    {{ collect($dok)->filter()->count() }}/6
+                    {{ collect($dok)->filter()->count() }}/4
                 </div>
             </div>
         </div>
@@ -157,7 +157,7 @@
                                 </td>
                                 <td>
                                     <b>Upload Dokumen</b>
-                                    <br><small class="text-muted">{{ collect($dok)->filter()->count() }}/6 dokumen terupload</small>
+                                    <br><small class="text-muted">{{ collect($dok)->filter()->count() }}/4 dokumen terupload</small>
                                 </td>
                                 <td class="text-right">
                                     <a href="{{ route('peserta.dokumen.index') }}"

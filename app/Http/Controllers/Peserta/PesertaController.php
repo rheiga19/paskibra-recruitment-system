@@ -54,7 +54,7 @@ class PesertaController extends Controller
             'nama_sekolah'   => ['required', 'string', 'max:100'],
             'jenjang'        => ['required', 'in:SMP,MTs,SMA,MA,SMK'],
             'kelas'          => ['required', 'in:VII,VIII,IX,X,XI,XII'],
-            'nilai_rata'     => ['required', 'numeric', 'min:0', 'max:100'],
+           
             'tinggi_badan'   => ['required', 'integer', 'min:100', 'max:250'],
             'berat_badan'    => ['required', 'integer', 'min:20',  'max:200'],
             'golongan_darah' => ['nullable', 'in:A,B,AB,O'],
@@ -71,7 +71,7 @@ class PesertaController extends Controller
             $request->only([
                 'nik', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir',
                 'no_hp', 'alamat_lengkap', 'nama_sekolah', 'jenjang', 'kelas',
-                'nilai_rata', 'tinggi_badan', 'berat_badan', 'golongan_darah',
+                'tinggi_badan', 'berat_badan', 'golongan_darah',
                 'nama_ortu', 'hp_ortu', 'hubungan_ortu', 'prestasi',
             ])
         );
@@ -103,7 +103,7 @@ class PesertaController extends Controller
     // Akses file hanya lewat route peserta.dokumen.lihat yang cek auth
     public function dokumenUpload(Request $request)
     {
-        $jenisList = ['foto_4x6', 'ktp_pelajar', 'akta_kelahiran', 'rapor', 'surat_sehat', 'surat_izin_ortu'];
+        $jenisList = ['foto_4x6', 'sertifikat', 'surat_sehat', 'surat_izin_ortu'];
 
         $request->validate([
             'jenis' => ['required', 'in:' . implode(',', $jenisList)],
@@ -155,7 +155,7 @@ class PesertaController extends Controller
     // Route: GET peserta/dokumen/{jenis}/lihat  → name: peserta.dokumen.lihat
     public function dokumenLihat(string $jenis)
     {
-        $jenisList = ['foto_4x6', 'ktp_pelajar', 'akta_kelahiran', 'rapor', 'surat_sehat', 'surat_izin_ortu'];
+        $jenisList = ['foto_4x6', 'sertifikat', 'surat_sehat', 'surat_izin_ortu'];
         abort_unless(in_array($jenis, $jenisList), 422);
 
         $dok = DokumenPeserta::where('user_id', auth()->id())
@@ -204,7 +204,7 @@ class PesertaController extends Controller
 
     public function dokumenHapus(Request $request, string $jenis)
     {
-        $jenisList = ['foto_4x6', 'ktp_pelajar', 'akta_kelahiran', 'rapor', 'surat_sehat', 'surat_izin_ortu'];
+        $jenisList = ['foto_4x6', 'sertifikat', 'surat_sehat', 'surat_izin_ortu'];
         abort_unless(in_array($jenis, $jenisList), 422);
 
         $user = auth()->user();
@@ -246,9 +246,7 @@ class PesertaController extends Controller
 
         $jenisList = [
             'foto_4x6'        => 'Foto 4x6',
-            'ktp_pelajar'     => 'KTP/Kartu Pelajar',
-            'akta_kelahiran'  => 'Akta Kelahiran',
-            'rapor'           => 'Rapor',
+            'sertifikat'      => 'Sertifikat',
             'surat_sehat'     => 'Surat Keterangan Sehat',
             'surat_izin_ortu' => 'Surat Izin Orang Tua',
         ];
@@ -319,7 +317,7 @@ class PesertaController extends Controller
             'nama_sekolah'   => $profil->nama_sekolah,
             'jenjang'        => $profil->jenjang,
             'kelas'          => $profil->kelas,
-            'nilai_rata'     => $profil->nilai_rata,
+        
             'nama_ortu'      => $profil->nama_ortu,
             'hp_ortu'        => $profil->hp_ortu,
             'hubungan_ortu'  => $profil->hubungan_ortu,
@@ -415,7 +413,6 @@ class PesertaController extends Controller
             && !empty($profil->nama_sekolah)
             && !empty($profil->jenjang)
             && !empty($profil->kelas)
-            && !empty($profil->nilai_rata)
             && !empty($profil->tinggi_badan)
             && !empty($profil->berat_badan)
             && !empty($profil->nama_ortu)
@@ -428,9 +425,7 @@ class PesertaController extends Controller
         $uploaded = DokumenPeserta::where('user_id', $userId)->pluck('jenis')->toArray();
         return [
             'foto_4x6'        => in_array('foto_4x6',        $uploaded),
-            'ktp_pelajar'     => in_array('ktp_pelajar',     $uploaded),
-            'akta_kelahiran'  => in_array('akta_kelahiran',  $uploaded),
-            'rapor'           => in_array('rapor',           $uploaded),
+            'sertifikat'      => in_array('sertifikat',      $uploaded),
             'surat_sehat'     => in_array('surat_sehat',     $uploaded),
             'surat_izin_ortu' => in_array('surat_izin_ortu', $uploaded),
         ];

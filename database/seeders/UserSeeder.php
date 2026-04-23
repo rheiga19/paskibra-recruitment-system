@@ -54,7 +54,6 @@ class UserSeeder extends Seeder
                 'nama_sekolah'      => $p['sekolah'],
                 'jenjang'           => $p['jenjang'],
                 'kelas'             => $p['kelas'],
-                'nilai_rata'        => rand(750, 950) / 10,
                 'nama_ortu'         => 'Orang Tua ' . $p['name'],
                 'hp_ortu'           => '0813' . rand(10000000, 99999999),
                 'hubungan_ortu'     => 'Ayah',
@@ -62,7 +61,7 @@ class UserSeeder extends Seeder
                 'is_profil_lengkap' => true,
             ]);
 
-            $jenisDokumen = ['foto_4x6', 'ktp_pelajar', 'akta_kelahiran', 'rapor', 'surat_sehat', 'surat_izin_ortu'];
+            $jenisDokumen = ['foto_4x6', 'sertifikat', 'surat_sehat', 'surat_izin_ortu'];
             foreach ($jenisDokumen as $jenis) {
                 DokumenPeserta::create([
                     'user_id'   => $user->id,

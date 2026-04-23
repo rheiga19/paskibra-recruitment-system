@@ -22,7 +22,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Paksa semua asset menggunakan HTTPS
         if (app()->environment('local')) {
-            URL::forceScheme('https');
+            URL::forceScheme('http');
         }
     }
 }

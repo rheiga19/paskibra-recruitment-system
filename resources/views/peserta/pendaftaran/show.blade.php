@@ -100,7 +100,7 @@
                     <tr><td class="text-muted pl-3">Alamat</td><td>{{ $pendaftaran->alamat_lengkap }}</td></tr>
                     <tr><td class="text-muted pl-3">Sekolah</td>
                         <td>{{ $pendaftaran->nama_sekolah }} &mdash; {{ $pendaftaran->jenjang }} Kelas {{ $pendaftaran->kelas }}</td></tr>
-                    <tr><td class="text-muted pl-3">Nilai Rata-rata</td><td>{{ $pendaftaran->nilai_rata }}</td></tr>
+                    
                     <tr><td class="text-muted pl-3">Tinggi / Berat</td><td>{{ $pendaftaran->tinggi_badan }} cm / {{ $pendaftaran->berat_badan }} kg</td></tr>
                     <tr><td class="text-muted pl-3">Orang Tua / Wali</td>
                         <td>{{ $pendaftaran->nama_ortu }} ({{ $pendaftaran->hubungan_ortu }}) &mdash; {{ $pendaftaran->hp_ortu }}</td></tr>

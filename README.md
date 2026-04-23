@@ -28,9 +28,7 @@ Sistem Rekrutmen & Absensi Paskibra Kecamatan Compreng adalah aplikasi web berba
 - Lengkapi biodata diri, data sekolah, dan data orang tua / wali
 - Upload 6 dokumen persyaratan:
   - Foto 4×6
-  - KTP / Kartu Pelajar
-  - Akta Kelahiran
-  - Rapor
+  - sertifikat
   - Surat Keterangan Sehat
   - Surat Izin Orang Tua
 - Kirim pendaftaran ke rekrutmen yang sedang aktif

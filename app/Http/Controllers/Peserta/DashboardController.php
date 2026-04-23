@@ -53,9 +53,7 @@ class DashboardController extends Controller
         $uploaded = DokumenPeserta::where('user_id', $userId)->pluck('jenis')->toArray();
         return [
             'foto_4x6'        => in_array('foto_4x6',        $uploaded),
-            'ktp_pelajar'     => in_array('ktp_pelajar',     $uploaded),
-            'akta_kelahiran'  => in_array('akta_kelahiran',  $uploaded),
-            'rapor'           => in_array('rapor',           $uploaded),
+            'sertifikat'      => in_array('sertifikat',      $uploaded),
             'surat_sehat'     => in_array('surat_sehat',     $uploaded),
             'surat_izin_ortu' => in_array('surat_izin_ortu', $uploaded),
         ];

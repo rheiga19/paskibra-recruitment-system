@@ -17,9 +17,7 @@ class DokumenPeserta extends Model
 
     public const JENIS = [
         'foto_4x6'        => 'Foto 4x6',
-        'ktp_pelajar'     => 'KTP / Kartu Pelajar',
-        'akta_kelahiran'  => 'Akta Kelahiran',
-        'rapor'           => 'Rapor',
+        'sertifikat'      => 'Sertifikat',
         'surat_sehat'     => 'Surat Keterangan Sehat',
         'surat_izin_ortu' => 'Surat Izin Orang Tua',
     ];
