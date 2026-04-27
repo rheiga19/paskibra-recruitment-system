@@ -13,16 +13,16 @@ class AdminSeeder extends Seeder
         // ── Admin ─────────────────────────────────────────────────
         User::create([
             'name'     => 'Administrator',
-            'email'    => 'admin@paskibra.id',
-            'password' => Hash::make('admin123'),
+            'email'    => 'admin@paskibra-compreng.my.id',
+            'password' => Hash::make('123PASkibra.'),
             'role'     => 'admin',
         ]);
 
         // ── Panitia ───────────────────────────────────────────────
         User::create([
             'name'     => 'Panitia Seleksi',
-            'email'    => 'panitia@paskibra.id',
-            'password' => Hash::make('panitia123'),
+            'email'    => 'panitia@paskibra-compreng.my.id',
+            'password' => Hash::make('123PANitia.'),
             'role'     => 'panitia',
         ]);
 

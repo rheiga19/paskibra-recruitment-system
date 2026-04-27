@@ -269,7 +269,7 @@
   <h2 class="section-title">Syarat & Ketentuan Pendaftar</h2>
   <div class="req-grid">
     <div class="req-card"><div class="req-card-icon">👤</div><div class="req-card-title">Persyaratan Umum</div><ul><li>Warga Negara Indonesia</li><li>Berdomisili di Kecamatan Compreng</li><li>Siswa aktif SMA/MA/SMK</li><li>Berbadan sehat jasmani & rohani</li><li>Belum pernah menjadi anggota Paskibra</li></ul></div>
-    <div class="req-card"><div class="req-card-icon">📄</div><div class="req-card-title">Dokumen Wajib</div><ul><li>KTP Pelajar / Kartu Pelajar</li><li>Akta Kelahiran</li><li>Rapor semester terakhir</li><li>Surat keterangan sehat dari dokter</li><li>Pas foto terbaru 4×6</li><li>Surat izin orang tua / wali</li></ul></div>
+    <div class="req-card"><div class="req-card-icon">📄</div><div class="req-card-title">Dokumen Wajib</div><ul><li>Pas foto terbaru 4×6</li><li>Sertifikat kegiatan ekstrakurikuler</li><li>Surat keterangan sehat</li><li>Surat izin orang tua / wali</li></ul></div>
     <div class="req-card"><div class="req-card-icon">🏃</div><div class="req-card-title">Kriteria Fisik</div><ul><li>Tinggi badan min. 165 cm (putra)</li><li>Tinggi badan min. 155 cm (putri)</li><li>Lulus tes kesehatan dasar</li><li>Kemampuan baris-berbaris dasar</li><li>Bebas narkoba dan tidak merokok</li></ul></div>
   </div>
 </section>

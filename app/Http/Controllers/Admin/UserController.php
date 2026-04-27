@@ -14,7 +14,6 @@ class UserController extends Controller
     {
         $query = User::query()->latest();
 
-        // Filter search
         if ($search = $request->search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
@@ -22,7 +21,6 @@ class UserController extends Controller
             });
         }
 
-        // Filter role
         if ($role = $request->role) {
             $query->where('role', $role);
         }
@@ -30,13 +28,14 @@ class UserController extends Controller
         $users = $query->paginate(15)->withQueryString();
 
         return view('admin.users.index', [
-            'users'          => $users,
-            'totalUser'      => User::count(),
-            'totalAdmin'     => User::where('role', 'admin')->count(),
-            'totalPeserta'   => User::where('role', 'peserta')->count(),
-            'aktifBulanIni'  => User::whereMonth('created_at', now()->month)
-                                    ->whereYear('created_at', now()->year)
-                                    ->count(),
+            'users'         => $users,
+            'totalUser'     => User::count(),
+            'totalAdmin'    => User::where('role', 'admin')->count(),
+            'totalPeserta'  => User::where('role', 'peserta')->count(),
+            'totalPanitia'  => User::where('role', 'panitia')->count(),
+            'aktifBulanIni' => User::whereMonth('created_at', now()->month)
+                                   ->whereYear('created_at', now()->year)
+                                   ->count(),
         ]);
     }
 
@@ -50,8 +49,8 @@ class UserController extends Controller
         $request->validate([
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'email', 'unique:users,email'],
-            'role'     => ['required', 'in:admin,peserta'],
-            'password' => ['required', Password::min(8)->uncompromised(), 'confirmed'],
+            'role'     => ['required', 'in:admin,peserta,panitia'],
+            'password' => ['required', Password::min(8)->letters()->numbers(), 'confirmed'],
         ]);
 
         User::create([
@@ -75,8 +74,8 @@ class UserController extends Controller
         $request->validate([
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'email', "unique:users,email,{$user->id}"],
-            'role'     => ['required', 'in:admin,peserta'],
-            'password' => ['nullable', Password::min(8)->uncompromised(), 'confirmed'],
+            'role'     => ['required', 'in:admin,peserta,panitia'],
+            'password' => ['nullable', Password::min(8)->letters()->numbers(), 'confirmed'],
         ]);
 
         $user->update([
@@ -95,7 +94,6 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        // Jangan hapus diri sendiri
         if ($user->id === auth()->id()) {
             return back()->with('error', 'Tidak dapat menghapus akun sendiri.');
         }
